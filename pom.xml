@@ -12,7 +12,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>ru.demo.wms</groupId>
-    <artifactId>DemoWMS</artifactId>
+    <artifactId>WMSapp</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
     <name>DemoWMS</name>
