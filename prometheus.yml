@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 15s # Интервал сбора метрик
+
+scrape_configs:
+  - job_name: 'warehouse-main'
+    static_configs:
+      - targets: ['warehouse-main:12345'] # Адрес экспортёра JMX в приложении

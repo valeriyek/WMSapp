@@ -1,0 +1,20 @@
+hostPort: 12345
+rules:
+  - pattern: "java.lang<type=Memory><>HeapMemoryUsage"
+    name: jvm_memory_bytes_used
+    type: GAUGE
+    attrNameSnakeCase: true
+  - pattern: "java.lang<type=GarbageCollector, name=*>"
+    name: jvm_gc_collection_seconds
+    type: COUNTER
+    help: "Time spent in a given JVM garbage collector in seconds"
+    attrNameSnakeCase: true
+  - pattern: "java.lang<type=Threading><>ThreadCount"
+    name: jvm_threads_current
+    type: GAUGE
+  - pattern: "java.lang<type=ClassLoading><>LoadedClassCount"
+    name: jvm_classes_loaded
+    type: GAUGE
+  - pattern: "java.lang<type=ClassLoading><>UnloadedClassCount"
+    name: jvm_classes_unloaded
+    type: COUNTER
