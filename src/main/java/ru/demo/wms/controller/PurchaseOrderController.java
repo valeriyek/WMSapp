@@ -1,48 +1,12 @@
 package ru.demo.wms.controller;
 
-/*Этот контроллер, PurchaseOrderController, управляет процессами покупки в приложении управления складом. 
-Вот его ключевые функции:
-
-Добавление общего пользовательского интерфейса (addCommonUi): Метод добавляет данные для динамических 
-выпадающих списков на странице регистрации заказа на покупку, используя услуги для 
-типов отправления (shipmentTypeService) и поставщиков (whUserTypeService).
-
-Регистрация заказа на покупку (showReg): При GET-запросе к /po/register отображает 
-форму для регистрации нового заказа на покупку и использует addCommonUi для заполнения данных модели.
-
-Сохранение заказа на покупку (save): При POST-запросе принимает данные о заказе на покупку, 
-сохраняет их и возвращает на страницу регистрации с сообщением о создании или ошибке.
-
-Отображение всех заказов на покупку (getAll): Отображает список всех заказов на покупку, 
-извлечённых из базы данных.
-
-Управление частями заказа на покупку (showPoPartsPage и другие связанные методы): 
-Эти методы управляют добавлением, удалением и обновлением частей (деталей) заказа на покупку. 
-Они обрабатывают операции, такие как добавление детали к заказу, удаление детали из заказа, 
-изменение количества деталей в заказе и т.д.
-
-Изменение статуса заказа на покупку: Включает методы для размещения заказа (placeOrder), 
-отмены заказа (cancel), генерации счета (generate) и экспорта данных заказа в PDF (print). 
-Эти методы позволяют изменять статус заказа на разных этапах его обработки.
-
-Экспорт в PDF (showVendorInvoice): Генерирует PDF-документ с информацией о заказе на покупку, 
-используя представление VendorInvoicePdfView.
-
-Этот контроллер тесно взаимодействует с сервисами, отвечающими за управление типами отправлений, 
-поставщиками, частями и самими заказами на покупку. Он предоставляет функционал для создания, управления 
-и отслеживания заказов на покупку, а также для изменения их статуса в соответствии с текущим этапом обработки заказа.*/
-
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import ru.demo.wms.consts.PurchaseOrderStatus;
@@ -54,6 +18,12 @@ import ru.demo.wms.service.IShipmentTypeService;
 import ru.demo.wms.service.IWhUserTypeService;
 import ru.demo.wms.view.VendorInvoicePdfView;
 
+/**
+ * Контроллер для управления заказами на закупку (Purchase Order).
+ * <p>
+ * Поддерживает регистрацию, сохранение, отображение, добавление/удаление деталей,
+ * изменение количества, смену статуса, а также экспорт в PDF.
+ */
 @Controller
 @RequestMapping("/po")
 public class PurchaseOrderController {
@@ -70,43 +40,48 @@ public class PurchaseOrderController {
 	@Autowired
 	private IPartService partService;
 
-
-
+	/**
+	 * Добавляет общие данные в модель:
+	 * - список типов отправки (Shipment Types)
+	 * - список поставщиков (Vendor Users)
+	 */
 	private void addCommonUi(Model model) {
 		model.addAttribute("sts", shipmentTypeService.getShipmentIdAndCodeByEnable("Yes"));
 		model.addAttribute("vendors", whUserTypeService.getWhUserIdAndCodeByType("Vendor"));
 	}
 
-
-
+	/**
+	 * Отображает форму регистрации нового заказа.
+	 */
 	@GetMapping("/register")
 	public String showReg(Model model) {
 		addCommonUi(model);
 		return "PurchaseOrderRegister";
 	}
 
-
+	/**
+	 * Сохраняет новый заказ на закупку.
+	 */
 	@PostMapping("/save")
-	public String save(
-			@ModelAttribute PurchaseOrder purchaseOrder,
-			Model model) 
-	{
+	public String save(@ModelAttribute PurchaseOrder purchaseOrder, Model model) {
 		try {
 			Integer id = service.savePurchaseOrder(purchaseOrder);
-			model.addAttribute("message", "Order '"+id+"' is created!");
+			model.addAttribute("message", "Заказ '" + id + "' создан!");
 		} catch (Exception e) {
-			model.addAttribute("message", "Order is failed to created!");
+			model.addAttribute("message", "Не удалось создать заказ!");
 			e.printStackTrace();
 		}
 		addCommonUi(model);
 		return "PurchaseOrderRegister";
 	}
 
+	/**
+	 * Отображает список всех заказов на закупку.
+	 */
 	@GetMapping("/all")
-	public String getAll(Model model)
-	{
+	public String getAll(Model model) {
 		try {
-			List<PurchaseOrder> list =  service.getAllPurchaseOrders();
+			List<PurchaseOrder> list = service.getAllPurchaseOrders();
 			model.addAttribute("list", list);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -114,178 +89,141 @@ public class PurchaseOrderController {
 		return "PurchaseOrderData";
 	}
 
-	///---------------------------(Screen#2)------------------------------
+	/**
+	 * Добавляет в модель список всех деталей (частей), доступных для выбора.
+	 */
 	private void commonUiForParts(Model model) {
 		model.addAttribute("parts", partService.getPartIdAndCode());
 	}
 
-
+	/**
+	 * Отображает страницу деталей заказа (детали можно добавлять, удалять, менять количество).
+	 */
 	@GetMapping("/parts")
-	public String showPoPartsPage(
-			@RequestParam Integer id,
-			Model model
-			) 
-	{
-
+	public String showPoPartsPage(@RequestParam Integer id, Model model) {
 		PurchaseOrder po = service.getOnePurchaseOrder(id);
 		model.addAttribute("po", po);
 
 		String status = service.getCurrentStatusOfPo(id);
-		if(PurchaseOrderStatus.OPEN.name().equals(status) || 
-				PurchaseOrderStatus.PICKING.name().equals(status)
-				) 
-		{
-
+		if (PurchaseOrderStatus.OPEN.name().equals(status) || PurchaseOrderStatus.PICKING.name().equals(status)) {
 			commonUiForParts(model);
-
 		}
 
 		List<PurchaseDtl> poDtls = service.getPurchaseDtlsByPoId(id);
 		model.addAttribute("list", poDtls);
-
 		return "PurchaseOrderParts";
 	}
+
 	/**
-	 * On Click Part Add, Read Form data as Dtl object
-	 * save using service.
-	 * Redirect to same page using /parts?id=<PurchaseOrderId>
-	 * 
+	 * Добавляет или обновляет деталь (позицию) в заказе.
 	 */
 	@PostMapping("/addPart")
 	public String addPart(PurchaseDtl dtl) {
 		Integer poId = dtl.getPo().getId();
-		if( PurchaseOrderStatus.OPEN.name()
-				.equals(service.getCurrentStatusOfPo(poId))
-				|| 
-				PurchaseOrderStatus.PICKING.name()
-				.equals(service.getCurrentStatusOfPo(poId)) 
-				) 
-		{
+
+		String currentStatus = service.getCurrentStatusOfPo(poId);
+		if (PurchaseOrderStatus.OPEN.name().equals(currentStatus) || PurchaseOrderStatus.PICKING.name().equals(currentStatus)) {
+
 			Integer partId = dtl.getPart().getId();
-
 			Optional<PurchaseDtl> opt = service.getPurchaseDtlByPartIdAndPoId(partId, poId);
-			if(opt.isPresent()) {
 
+			if (opt.isPresent()) {
+				// Увеличить количество существующей детали
 				service.updatePurchaseDtlQtyByDtlId(dtl.getQty(), opt.get().getId());
 			} else {
+				// Добавить новую деталь
 				service.savePurchaseDtl(dtl);
 			}
 
-			if(PurchaseOrderStatus.OPEN.name()
-					.equals(service.getCurrentStatusOfPo(poId))
-					) 
-			{
+			// Если был статус OPEN — перевести в PICKING
+			if (PurchaseOrderStatus.OPEN.name().equals(currentStatus)) {
 				service.updatePoStatus(poId, PurchaseOrderStatus.PICKING.name());
 			}
 		}
-		return "redirect:parts?id="+ poId;
+		return "redirect:parts?id=" + poId;
 	}
 
-
+	/**
+	 * Удаляет деталь из заказа. Если это была последняя — меняет статус на OPEN.
+	 */
 	@GetMapping("/removePart")
-	public String removePart(
-			@RequestParam Integer poId,
-			@RequestParam Integer dtlId
-			)
-	{
-		if(PurchaseOrderStatus.PICKING.name()
-				.equals(service.getCurrentStatusOfPo(poId))
-				) 
-		{
+	public String removePart(@RequestParam Integer poId, @RequestParam Integer dtlId) {
+		if (PurchaseOrderStatus.PICKING.name().equals(service.getCurrentStatusOfPo(poId))) {
 			service.deletePurchaseDtl(dtlId);
-			if(service.getPurchaseDtlsCountByPoId(poId)==0) {
+			if (service.getPurchaseDtlsCountByPoId(poId) == 0) {
 				service.updatePoStatus(poId, PurchaseOrderStatus.OPEN.name());
 			}
 		}
-		return "redirect:parts?id="+poId;
+		return "redirect:parts?id=" + poId;
 	}
 
-	/***
-	 * IncreaseQty by +1
-	 * 
+	/**
+	 * Увеличивает количество по позиции на +1.
 	 */
 	@GetMapping("/increaseQty")
-	public String increaseQty(
-			@RequestParam Integer poId,
-			@RequestParam Integer dtlId
-			)
-	{
+	public String increaseQty(@RequestParam Integer poId, @RequestParam Integer dtlId) {
 		service.updatePurchaseDtlQtyByDtlId(1, dtlId);
-		return "redirect:parts?id="+poId;
+		return "redirect:parts?id=" + poId;
 	}
-	/***
-	 * reduce Qty by -1
+
+	/**
+	 * Уменьшает количество по позиции на -1.
 	 */
 	@GetMapping("/reduceQty")
-	public String reduceQty(
-			@RequestParam Integer poId,
-			@RequestParam Integer dtlId
-			)
-	{
+	public String reduceQty(@RequestParam Integer poId, @RequestParam Integer dtlId) {
 		service.updatePurchaseDtlQtyByDtlId(-1, dtlId);
-		return "redirect:parts?id="+poId;
+		return "redirect:parts?id=" + poId;
 	}
 
-	/***
-	 * PLACE ORDER
+	/**
+	 * Переводит заказ в статус ORDERED, если сейчас он в PICKING.
 	 */
 	@GetMapping("/placeOrder")
-	public String placeOrder(@RequestParam Integer poId) 
-	{
-		if(PurchaseOrderStatus.PICKING.name()
-				.equals(service.getCurrentStatusOfPo(poId))
-				) 
-		{
+	public String placeOrder(@RequestParam Integer poId) {
+		if (PurchaseOrderStatus.PICKING.name().equals(service.getCurrentStatusOfPo(poId))) {
 			service.updatePoStatus(poId, PurchaseOrderStatus.ORDERED.name());
 		}
-		return "redirect:parts?id="+poId;
+		return "redirect:parts?id=" + poId;
 	}
+
 	/**
-	 * CANCEL ORDER
+	 * Отменяет заказ, если он ещё не был отменён.
 	 */
 	@GetMapping("/cancel")
-	public String cancelOrder(@RequestParam Integer id) 
-	{
-
+	public String cancelOrder(@RequestParam Integer id) {
 		String status = service.getCurrentStatusOfPo(id);
-		if(
-				PurchaseOrderStatus.PICKING.name().equals(status) ||
-				PurchaseOrderStatus.ORDERED.name().equals(status) ||
-				PurchaseOrderStatus.OPEN.name().equals(status)  ||
-				!PurchaseOrderStatus.CANCELLED.name().equals(status)  
-				) 
-		{
+		if (PurchaseOrderStatus.OPEN.name().equals(status)
+				|| PurchaseOrderStatus.PICKING.name().equals(status)
+				|| PurchaseOrderStatus.ORDERED.name().equals(status)
+				|| !PurchaseOrderStatus.CANCELLED.name().equals(status)) {
 			service.updatePoStatus(id, PurchaseOrderStatus.CANCELLED.name());
 		}
 		return "redirect:all";
 	}
-	
-	
+
 	/**
-	 * GENERATE ORDER
+	 * Переводит заказ в статус INVOICED.
 	 */
 	@GetMapping("/generate")
-	public String generateInvoice(@RequestParam Integer id) 
-	{
+	public String generateInvoice(@RequestParam Integer id) {
 		service.updatePoStatus(id, PurchaseOrderStatus.INVOICED.name());
 		return "redirect:all";
 	}
-	
-	/***
-	 * PDF Export
+
+	/**
+	 * Генерирует PDF-счёт по заказу.
 	 */
 	@GetMapping("/print")
-	public ModelAndView showVendorInvoice(
-			@RequestParam Integer id)
-	{
+	public ModelAndView showVendorInvoice(@RequestParam Integer id) {
 		ModelAndView m = new ModelAndView();
 		m.setView(new VendorInvoicePdfView());
-		
+
 		List<PurchaseDtl> list = service.getPurchaseDtlsByPoId(id);
 		m.addObject("list", list);
-		
-		PurchaseOrder po =  service.getOnePurchaseOrder(id);
+
+		PurchaseOrder po = service.getOnePurchaseOrder(id);
 		m.addObject("po", po);
+
 		return m;
 	}
 }

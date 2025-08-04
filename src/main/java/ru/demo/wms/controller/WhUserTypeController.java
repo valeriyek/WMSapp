@@ -1,36 +1,5 @@
 package ru.demo.wms.controller;
 
-/*
-
-WhUserTypeController управляет типами пользователей склада в системе управления складом. Вот его основные функции:
-
-Регистрация новых типов пользователей (ShowRegister, saveWhUserType): 
-Предоставляет страницу для регистрации новых типов пользователей и сохраняет их данные в системе. 
-При успешном сохранении отправляется автоматическое уведомление по электронной почте.
-
-Просмотр всех типов пользователей (fetchWhUserTypes): Отображает список всех 
-зарегистрированных типов пользователей в системе.
-
-Удаление типа пользователя (deleteWhUserTypeData): Удаляет выбранный тип пользователя 
-из системы и обновляет список.
-
-Редактирование типа пользователя (showWhUserTypeData, updateWhUserType): Позволяет редактировать 
-данные существующего типа пользователя и сохранять изменения.
-
-Валидация данных через AJAX (validate, validateemail, validateidnum): Предоставляет механизм 
-для проверки уникальности кода типа пользователя, электронной почты и идентификационного номера без перезагрузки страницы.
-
-Экспорт данных в Excel (exportData): Предлагает функциональность для экспорта 
-списка типов пользователей в формат Excel.
-
-Генерация графиков (generateCharts): Создает графики для визуализации статистики типов пользователей, 
-например, распределения типов пользователей по их количеству.
-
-Этот контроллер важен для управления типами пользователей склада, предоставляя возможности 
-для их создания, просмотра, редактирования и удаления. Включает в себя функционал валидации 
-для предотвращения дублирования данных и инструменты для анализа данных через графики и экспорт.
-
-*/
 
 import java.util.List;
 
@@ -41,12 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import ru.demo.wms.exception.WhUserTypeNotFound;
@@ -55,12 +19,24 @@ import ru.demo.wms.service.IWhUserTypeService;
 import ru.demo.wms.util.MailUtil;
 import ru.demo.wms.util.WhUserTypeUtil;
 import ru.demo.wms.view.WhUserTypeExcelView;
+/**
+ * Контроллер для управления типами пользователей склада в системе WMS.
+ * <p>
+ * Отвечает за:
+ * <ul>
+ *     <li>регистрацию новых типов пользователей склада,</li>
+ *     <li>просмотр, редактирование и удаление существующих записей,</li>
+ *     <li>AJAX-проверку уникальности кода, email и идентификатора,</li>
+ *     <li>экспорт данных в Excel,</li>
+ *     <li>генерацию графиков по количеству пользователей каждого типа.</li>
+ * </ul>
+ */
 
-@RequestMapping("/wh")
 @Controller
+@RequestMapping("/wh")
 public class WhUserTypeController {
 
-	private static final Logger LOG=LoggerFactory.getLogger(ShipmentTypeController.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ShipmentTypeController.class);
 
 	@Autowired
 	private IWhUserTypeService service;
@@ -70,227 +46,197 @@ public class WhUserTypeController {
 
 	@Autowired
 	private ServletContext context;
-	
+
 	@Autowired
 	private MailUtil mailUtil;
-	
 
+	/**
+	 * Отображает страницу регистрации нового типа пользователя склада.
+	 */
 	@GetMapping("/register")
 	public String ShowRegister() {
 		return "WhUserTypeRegister";
 	}
 
-
+	/**
+	 * Обрабатывает сохранение нового типа пользователя склада.
+	 * Также запускает отправку уведомления на email.
+	 */
 	@PostMapping("/save")
 	public String saveWhUserType(
 			@ModelAttribute WhUserType whUserType,
-			Model model) 
-	{
+			Model model) {
 
-		LOG.info("ENTERED INTO SAVE METHOD");
+		LOG.info("Вход в метод save");
 
 		try {
+			Integer id = service.saveWhUserType(whUserType);
 
-			Integer id=service.saveWhUserType(whUserType);
-			
-
-			if(id>0) {
-				new Thread(()->{
+			// Отправка email в отдельном потоке
+			if (id > 0) {
+				new Thread(() -> {
 					mailUtil.sendEmail(
-							whUserType.getUserEmail(), 
+							whUserType.getUserEmail(),
 							"AUTO GENERATED EMAIL",
-							"HELLO");
+							"HELLO"
+					);
 				}).start();
 			}
 
-			String msg="WhUserType '"+id+"' is created";
+			String msg = "WhUserType '" + id + "' успешно создан";
 			model.addAttribute("message", msg);
-		}catch (Exception e) {
-			LOG.error(" Unable to process request due to {}",e.getMessage());
+
+		} catch (Exception e) {
+			LOG.error("Ошибка при сохранении: {}", e.getMessage());
 			e.printStackTrace();
 		}
-		LOG.info("ABOUT GO TO UI PAGE !");
 
-
+		LOG.info("Переход к UI-странице");
 		return "WhUserTypeRegister";
 	}
 
-
+	/**
+	 * Отображает список всех типов пользователей склада.
+	 */
 	@GetMapping("/all")
 	public String fetchWhUserTypes(Model model) {
-
-		LOG.info("ENTERED INTO FETCH ALL ROWS");
-
+		LOG.info("Запрос на получение всех записей");
 		try {
-
-			List<WhUserType> list=service.getAllWhUserTypes();
-
+			List<WhUserType> list = service.getAllWhUserTypes();
 			model.addAttribute("list", list);
-		}
-		catch (Exception e) {
-			LOG.error(" Unable to fetch data  {}",e.getMessage());
+		} catch (Exception e) {
+			LOG.error("Ошибка при получении списка: {}", e.getMessage());
 			e.printStackTrace();
 		}
-
-		LOG.info("MOVING DATA PAGE TO DISPLAY");
-
-		return "WhUserTypeData";			
-
-	}
-
-
-	@GetMapping("/delete")
-	public String deleteWhUserTypeData(
-			@RequestParam Integer id,
-			Model model	
-			) {
-		LOG.info("ENTERED INTO DELETE METHOD");
-		try {
-
-			service.deleteWhUserType(id);
-
-			String msg="WhUserType  '"+id+"' is Deleted !";
-			LOG.debug(msg);
-			model.addAttribute("message",msg);
-		} catch (WhUserTypeNotFound e) {
-			LOG.error("Unable to process delete Request {}",e.getMessage());
-			e.printStackTrace();
-			model.addAttribute("message",e.getMessage());
-		}
-
-
-		List<WhUserType> list=service.getAllWhUserTypes();
-
-		model.addAttribute("list", list);
-
+		LOG.info("Переход на страницу отображения");
 		return "WhUserTypeData";
 	}
 
-
-	@GetMapping("/edit")
-	public String showWhUserTypeData(
-			@RequestParam Integer id,
-			Model model) {
-		LOG.info("ENTERED INTO EDIT METHOD");
-		String page = null;
+	/**
+	 * Удаляет тип пользователя по ID.
+	 */
+	@GetMapping("/delete")
+	public String deleteWhUserTypeData(@RequestParam Integer id, Model model) {
+		LOG.info("Запрос на удаление");
 		try {
-			WhUserType whut=service.getOneWhUserType(id);
-			model.addAttribute("whusertype", whut);	
-
-			page= "WhUserTypeEdit";  
-		}catch (WhUserTypeNotFound e) {
-			LOG.error("Unable to process Edit Request : {}",e.getMessage());
-			e.printStackTrace();
-
-			page = "WhUserTypeData";
+			service.deleteWhUserType(id);
+			model.addAttribute("message", "WhUserType '" + id + "' удалён!");
+		} catch (WhUserTypeNotFound e) {
+			LOG.error("Ошибка при удалении: {}", e.getMessage());
 			model.addAttribute("message", e.getMessage());
-
-
-			List<WhUserType> list=service.getAllWhUserTypes();
-
-			model.addAttribute("list", list);
-
+			e.printStackTrace();
 		}
-		LOG.info("ABOUT TO GO PAGE {} ", page);
 
+		model.addAttribute("list", service.getAllWhUserTypes());
+		return "WhUserTypeData";
+	}
+
+	/**
+	 * Загружает данные типа пользователя по ID для редактирования.
+	 */
+	@GetMapping("/edit")
+	public String showWhUserTypeData(@RequestParam Integer id, Model model) {
+		LOG.info("Запрос на редактирование");
+		String page;
+		try {
+			WhUserType whut = service.getOneWhUserType(id);
+			model.addAttribute("whusertype", whut);
+			page = "WhUserTypeEdit";
+		} catch (WhUserTypeNotFound e) {
+			LOG.error("Ошибка при загрузке данных для редактирования: {}", e.getMessage());
+			model.addAttribute("message", e.getMessage());
+			model.addAttribute("list", service.getAllWhUserTypes());
+			page = "WhUserTypeData";
+		}
+		LOG.info("Переход на страницу {}", page);
 		return page;
 	}
 
-
+	/**
+	 * Обновляет существующий тип пользователя.
+	 */
 	@PostMapping("/update")
-	public String updateWhUserType(@ModelAttribute WhUserType whut ) {
-
-		LOG.info("ENTERED INTO UPDATE METHOD");
+	public String updateWhUserType(@ModelAttribute WhUserType whut) {
+		LOG.info("Запрос на обновление");
 		try {
-
 			service.updateWhUserType(whut);
-
-		}
-		catch (Exception e) {
-			LOG.error("Unable to Perform Update : {}",e.getMessage());
+		} catch (Exception e) {
+			LOG.error("Ошибка при обновлении: {}", e.getMessage());
 			e.printStackTrace();
 		}
-
-		LOG.info("REDIRECTING TO FETCH ALL ROWS");
-
-
+		LOG.info("Редирект на список всех записей");
 		return "redirect:all";
 	}
 
+	// === AJAX-валидация ===
 
+	/**
+	 * AJAX: проверка уникальности кода типа пользователя.
+	 */
 	@GetMapping("/validate")
 	@ResponseBody
-	public String validateWhUserTypeCode(@RequestParam String code,
-			@RequestParam Integer id) {
-
-		String message="";
-		if(id==0 && service.isWhUserTypeCodeExit(code)) {
-			message=code+" already exit";
-		}
-		else if(id!=0 && service.isWhUserTypeCodeExitForEdit(code,id)){
-			message=code+" already exit";
+	public String validateWhUserTypeCode(@RequestParam String code, @RequestParam Integer id) {
+		String message = "";
+		if (id == 0 && service.isWhUserTypeCodeExit(code)) {
+			message = code + " уже существует";
+		} else if (id != 0 && service.isWhUserTypeCodeExitForEdit(code, id)) {
+			message = code + " уже существует";
 		}
 		return message;
-
 	}
 
+	/**
+	 * AJAX: проверка уникальности email пользователя.
+	 */
 	@GetMapping("/validateemail")
 	@ResponseBody
-	public String validateWhUserTypeEmail(@RequestParam String email,
-			@RequestParam Integer id) {
-
-		String message="";
-		if(id==0 && service.getWhUserTypeuserEmailCount(email)) {
-			message=email+" already exit";
-		}
-		else if(id!=0 && service.getWhUserTypeuserEmailCountForEdit(email,id)){
-			message=email+" already exit";
+	public String validateWhUserTypeEmail(@RequestParam String email, @RequestParam Integer id) {
+		String message = "";
+		if (id == 0 && service.getWhUserTypeuserEmailCount(email)) {
+			message = email + " уже существует";
+		} else if (id != 0 && service.getWhUserTypeuserEmailCountForEdit(email, id)) {
+			message = email + " уже существует";
 		}
 		return message;
-
 	}
 
-
+	/**
+	 * AJAX: проверка уникальности идентификационного номера пользователя.
+	 */
 	@GetMapping("/validateidnum")
 	@ResponseBody
-	public String validateWhUserIdNum(@RequestParam String idnum,
-			@RequestParam Integer id) {
-
-		String message="";
-		if(id==0 && service.getWhUserTypeuserIdNumCount(idnum)) {
-			message=idnum+" already exit";
-		}
-		else if(id!=0 && service.getWhUserTypeuserIdNumCountForEdit(idnum,id)){
-			message=idnum+" already exit";
+	public String validateWhUserIdNum(@RequestParam String idnum, @RequestParam Integer id) {
+		String message = "";
+		if (id == 0 && service.getWhUserTypeuserIdNumCount(idnum)) {
+			message = idnum + " уже существует";
+		} else if (id != 0 && service.getWhUserTypeuserIdNumCountForEdit(idnum, id)) {
+			message = idnum + " уже существует";
 		}
 		return message;
-
 	}
 
+	// === Экспорт и графики ===
 
-
+	/**
+	 * Экспорт всех записей в Excel-файл.
+	 */
 	@GetMapping("/excel")
 	public ModelAndView exportData() {
-		ModelAndView m=new ModelAndView();
-		m.setView(new WhUserTypeExcelView()); 
-
-		List<WhUserType> list=service.getAllWhUserTypes();
-		m.addObject("list", list);
+		ModelAndView m = new ModelAndView();
+		m.setView(new WhUserTypeExcelView());
+		m.addObject("list", service.getAllWhUserTypes());
 		return m;
-
 	}
 
-
+	/**
+	 * Генерация круговой и столбчатой диаграмм по количеству пользователей каждого типа.
+	 */
 	@GetMapping("/charts")
 	public String generateCharts() {
-		List<Object[]> list=service.getWhUserTypUserIDAndCount();
-		String path=context.getRealPath("/");
+		List<Object[]> list = service.getWhUserTypUserIDAndCount();
+		String path = context.getRealPath("/");
 		util.generatePieChart(path, list);
 		util.generateBarChart(path, list);
 		return "WhUserTypeCharts";
-
-	}  
-
-
-
+	}
 }

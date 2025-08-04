@@ -1,30 +1,5 @@
 package ru.demo.wms.controller;
 
-/*
-ShipingController управляет отгрузками в приложении управления складом. Он выполняет следующие задачи:
-
-Отображение формы регистрации отгрузки (showShipingRegisterPage): Показывает страницу для создания новой отгрузки 
-с динамически заполненным выпадающим списком заказов на продажу, которые готовы к отгрузке.
-
-Сохранение отгрузки (saveShiping): Принимает данные формы отгрузки, создает детали отгрузки 
-на основе деталей заказа на продажу, сохраняет отгрузку и обновляет статус связанного заказа на продажу на "Отгружено".
-
-Создание деталей отгрузки по заказу на продажу (createShipingDetailsBySaleOrder): 
-По данному заказу на продажу извлекает детали заказа и создает соответствующие детали отгрузки.
-
-Отображение всех отгрузок (showAllShiping): Предоставляет список всех отгрузок для отображения.
-
-Отображение деталей отгрузки по ID отгрузки (showShipingDetailByShipingId): 
-Показывает страницу с деталями конкретной отгрузки, включая список частей, входящих в отгрузку.
-
-Обновление статуса детали отгрузки (updateAccepted и updateRejected): Позволяет обновить 
-статус конкретной детали отгрузки на "Получено" или "Возвращено" соответственно.
-
-Контроллер обеспечивает функциональность управления отгрузками от момента создания отгрузки 
-до обновления статусов деталей отгрузки, что позволяет отслеживать процесс выполнения заказов на продажу. 
-Это ключевой компонент системы управления складом, обеспечивающий связь между продажами и логистикой.
-*/
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,11 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import ru.demo.wms.consts.SaleOrderStatus;
 import ru.demo.wms.consts.ShipingDetailStatus;
@@ -48,6 +19,12 @@ import ru.demo.wms.model.ShipingDtl;
 import ru.demo.wms.service.ISaleOrderService;
 import ru.demo.wms.service.IShipingService;
 
+/**
+ * Контроллер для управления отгрузками.
+ * <p>
+ * Обрабатывает регистрацию, отображение, детализацию и обновление статусов деталей отгрузки.
+ * Обеспечивает связь между заказом на продажу и логистикой.
+ */
 @Controller
 @RequestMapping("/shiping")
 public class ShipingController {
@@ -60,51 +37,57 @@ public class ShipingController {
 	@Autowired
 	private ISaleOrderService orderService;
 
-
+	/**
+	 * Добавляет в модель список заказов на продажу, готовых к отгрузке (статус INVOICED).
+	 */
 	private void commonUI(Model model) {
 		model.addAttribute("sos", orderService.findSaleOrderIdAndCodeByStatus(SaleOrderStatus.INVOICED.name()));
 	}
 
-
+	/**
+	 * Отображает страницу регистрации новой отгрузки.
+	 */
 	@GetMapping("/register")
 	public String showShipingRegisterPage(Model model) {
-		log.info("Inside showShipingRegisterPage():");
+		log.info("Переход к регистрации отгрузки");
 		commonUI(model);
 		return "shipingRegister";
 	}
 
-
+	/**
+	 * Сохраняет отгрузку и создаёт её детали на основе заказа на продажу.
+	 */
 	@PostMapping("/save")
 	public String saveShiping(@ModelAttribute Shiping shiping, Model model) {
-		log.info("Inside saveShiping():");
+		log.info("Сохранение новой отгрузки");
 		try {
-
-			createShipingDetailsBySaleOrder(shiping);
+			createShipingDetailsBySaleOrder(shiping); // создаём строки на основе заказа
 			Integer id = service.saveShiping(shiping);
 
+			// Обновить статус заказа на продажу как "SHIPPED"
 			if (id != null)
 				orderService.updateSaleOrderStatus(shiping.getSo().getId(), SaleOrderStatus.SHIPPED.name());
 
-			model.addAttribute("message", "Shiping Created :" + id);
+			model.addAttribute("message", "Отгрузка создана: " + id);
 		} catch (Exception e) {
-			log.error("Exception inside saveShiping():" + e.getMessage());
+			log.error("Ошибка при сохранении отгрузки: " + e.getMessage());
 			e.printStackTrace();
 		}
 		commonUI(model);
-		log.info("About shipingRegister UI Page:");
 		return "shipingRegister";
 	}
 
+	/**
+	 * Создаёт строки отгрузки (ShipingDtl) на основе строк заказа на продажу.
+	 *
+	 * @param shiping объект отгрузки, в который добавляются детали
+	 */
 	private void createShipingDetailsBySaleOrder(Shiping shiping) {
-
 		Integer soId = shiping.getSo().getId();
-
 		List<SaleOrderDetails> list = orderService.getSaleDtlsBySaleOrderId(soId);
-
 		Set<ShipingDtl> shipingSet = new HashSet<>();
 
 		for (SaleOrderDetails sdtl : list) {
-
 			ShipingDtl shipingDtl = new ShipingDtl();
 			shipingDtl.setPartCode(sdtl.getPart().getPartCode());
 			shipingDtl.setBaseCost(sdtl.getPart().getPartBaseCost());
@@ -112,45 +95,61 @@ public class ShipingController {
 
 			shipingSet.add(shipingDtl);
 		}
+
 		shiping.setDtls(shipingSet);
 	}
 
-
+	/**
+	 * Отображает список всех отгрузок.
+	 */
 	@GetMapping("/all")
 	public String showAllShiping(Model model) {
-		log.info("Inside showAllShiping():");
+		log.info("Загрузка всех отгрузок");
 		try {
 			List<Shiping> list = service.getAllShiping();
 			model.addAttribute("list", list);
 		} catch (Exception e) {
-			log.error("Exception inside showAllShiping():" + e.getMessage());
+			log.error("Ошибка при отображении отгрузок: " + e.getMessage());
 			e.printStackTrace();
 		}
-		log.info("About ShipingData UI Page:");
 		return "ShipingData";
 	}
 
-
+	/**
+	 * Отображает детали конкретной отгрузки.
+	 *
+	 * @param id идентификатор отгрузки
+	 */
 	@GetMapping("/parts")
 	public String showShipingDetailByShipingId(@RequestParam Integer id, Model model) {
-		log.info("Inside showShipingDetailByShipingId():");
+		log.info("Отображение деталей отгрузки ID: " + id);
 		Shiping shiping = service.getOneShiping(id);
 		model.addAttribute("shiping", shiping);
 		model.addAttribute("list", shiping.getDtls());
 		return "shipingParts";
 	}
 
-
+	/**
+	 * Обновляет статус детали отгрузки на "Получено".
+	 *
+	 * @param id    ID отгрузки
+	 * @param dtlId ID детали
+	 */
 	@GetMapping("/accept")
 	public String updateAccepted(@RequestParam Integer id, @RequestParam Integer dtlId) {
 		service.updateShipingDtlStatus(dtlId, ShipingDetailStatus.RECEIVED.name());
 		return "redirect:parts?id=" + id;
 	}
 
+	/**
+	 * Обновляет статус детали отгрузки на "Возвращено".
+	 *
+	 * @param id    ID отгрузки
+	 * @param dtlId ID детали
+	 */
 	@GetMapping("/reject")
 	public String updateRejected(@RequestParam Integer id, @RequestParam Integer dtlId) {
 		service.updateShipingDtlStatus(dtlId, ShipingDetailStatus.RETURNED.name());
 		return "redirect:parts?id=" + id;
 	}
-
 }

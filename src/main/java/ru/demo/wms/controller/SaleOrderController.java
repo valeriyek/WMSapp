@@ -8,11 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import ru.demo.wms.consts.SaleOrderStatus;
@@ -24,6 +20,12 @@ import ru.demo.wms.service.IShipmentTypeService;
 import ru.demo.wms.service.IWhUserTypeService;
 import ru.demo.wms.view.CustomerInvoicePDFView;
 
+/**
+ * Контроллер для управления заказами на продажу (Sale Orders).
+ * <p>
+ * Поддерживает операции регистрации, сохранения, отображения, добавления деталей, изменения количества,
+ * смены статуса и генерации PDF-счёта.
+ */
 @Controller
 @RequestMapping("/sale")
 public class SaleOrderController {
@@ -42,73 +44,91 @@ public class SaleOrderController {
 	@Autowired
 	private IPartService partService;
 
+	/**
+	 * Добавляет в модель список типов отгрузки и клиентов для использования в форме.
+	 */
 	private void commonUI(Model model) {
 		model.addAttribute("sts", shipmentService.getShipmentIdAndCodeByEnable("Yes"));
 		model.addAttribute("customers", whUserService.getWhUserIdAndCodeByType("Customer"));
 	}
 
+	/**
+	 * Отображает форму для регистрации нового заказа на продажу.
+	 */
 	@GetMapping("/register")
 	public String showSaleOrderRegisterPage(Model model) {
-		log.info("Inside showSaleOrderRegisterPage():");
+		log.info("Переход на страницу регистрации заказа на продажу");
 		commonUI(model);
 		return "registerSaleOrder";
 	}
 
+	/**
+	 * Сохраняет заказ на продажу, полученный из формы.
+	 */
 	@PostMapping("/save")
 	public String saveSaleOrder(@ModelAttribute SaleOrder saleOrder, Model model) {
-		log.info("Inside saveSaleOrder():");
+		log.info("Сохранение нового заказа на продажу");
 		try {
 			Integer id = service.saveSaleOrder(saleOrder);
-			String msg = "Sale Order Created : " + id;
-			model.addAttribute("message", msg);
-			log.debug("Sale Order Save : " + id);
+			model.addAttribute("message", "Заказ на продажу создан: " + id);
+			log.debug("Сохранён заказ ID: " + id);
 		} catch (Exception e) {
-			log.error("Exception inside saveSaleOrder():" + e.getMessage());
+			log.error("Ошибка при сохранении: " + e.getMessage());
 			e.printStackTrace();
 		}
 		commonUI(model);
-		log.info("About registerSaleOrder UI Page:");
 		return "registerSaleOrder";
 	}
 
+	/**
+	 * Отображает список всех заказов на продажу.
+	 */
 	@GetMapping("/all")
 	public String fetchAllSaleOrder(Model model) {
-		log.info("Inside fetchAllSaleOrder():");
+		log.info("Загрузка списка всех заказов на продажу");
 		try {
 			List<SaleOrder> list = service.getAllSaleOrder();
 			model.addAttribute("list", list);
-			log.debug("Fetch All Sale Order Record:" + list);
 		} catch (Exception e) {
-			log.error("Exception inside fetchAllSaleOrder():" + e.getMessage());
+			log.error("Ошибка при загрузке заказов: " + e.getMessage());
 			e.printStackTrace();
 		}
-		log.info("About saleOrderData UI Page:");
 		return "saleOrderData";
 	}
 
+	/**
+	 * AJAX-проверка уникальности кода заказа.
+	 */
 	@GetMapping("/validateOrderCode")
+	@ResponseBody
 	public String validateOrderCode(@RequestParam String code, @RequestParam Integer id) {
-		log.info("Inside validateOrderCode():");
+		log.info("Проверка уникальности кода заказа");
 		String message = "";
 		try {
 			if (id == 0 && service.validateOrderCode(code))
-				message = code + ",Already Exit";
+				message = code + ", уже существует";
 			else if (id != 0 && service.validateOrderCodeAndId(code, id))
-				message = code + ",Already Exit";
+				message = code + ", уже существует";
 		} catch (Exception e) {
-			log.error("Exception inside validateOrderCode():" + e.getMessage());
+			log.error("Ошибка в validateOrderCode(): " + e.getMessage());
 			e.printStackTrace();
 		}
 		return message;
 	}
 
+	/**
+	 * Добавляет в модель список всех деталей (part), доступных для выбора.
+	 */
 	private void commonUIForParts(Model model) {
 		model.addAttribute("parts", partService.getPartIdAndCode());
 	}
 
+	/**
+	 * Отображает страницу управления деталями (позициями) заказа.
+	 */
 	@GetMapping("/parts")
 	public String showSaleOrderPartPage(@RequestParam Integer id, Model model) {
-		log.info("Inside showSaleOrderPartPage():");
+		log.info("Переход к деталям заказа на продажу");
 		try {
 			SaleOrder saleOrder = service.getOneSaleOrder(id);
 			model.addAttribute("saleOrder", saleOrder);
@@ -117,20 +137,22 @@ public class SaleOrderController {
 				commonUIForParts(model);
 			}
 		} catch (Exception e) {
-			log.error("Exception inside showSaleOrderPartPage():" + e.getMessage());
+			log.error("Ошибка при загрузке деталей заказа: " + e.getMessage());
 			e.printStackTrace();
 		}
 		List<SaleOrderDetails> list = service.getSaleDtlsBySaleOrderId(id);
 		model.addAttribute("list", list);
-		log.info("About saleOrderParts UI Page");
 		return "saleOrderPart";
 	}
 
+	/**
+	 * Добавляет или обновляет деталь в заказе.
+	 */
 	@PostMapping("/addPart")
 	public String addPart(SaleOrderDetails saleOrderDetails) {
 		Integer soId = saleOrderDetails.getSaleOrder().getId();
-		if (SaleOrderStatus.OPEN.name().equals(service.getCurrentStatusOfSaleOrder(soId))
-				|| SaleOrderStatus.READY.name().equals(service.getCurrentStatusOfSaleOrder(soId))) {
+		String status = service.getCurrentStatusOfSaleOrder(soId);
+		if (SaleOrderStatus.OPEN.name().equals(status) || SaleOrderStatus.READY.name().equals(status)) {
 			Integer partId = saleOrderDetails.getPart().getId();
 			Optional<SaleOrderDetails> optional = service.getSaleDetailByPartIdAndSaleOrderId(partId, soId);
 			if (optional.isPresent()) {
@@ -138,13 +160,16 @@ public class SaleOrderController {
 			} else {
 				service.savePurchaseDetails(saleOrderDetails);
 			}
-			if (SaleOrderStatus.OPEN.name().equals(service.getCurrentStatusOfSaleOrder(soId))) {
+			if (SaleOrderStatus.OPEN.name().equals(status)) {
 				service.updateSaleOrderStatus(soId, SaleOrderStatus.READY.name());
 			}
 		}
 		return "redirect:parts?id=" + soId;
 	}
 
+	/**
+	 * Удаляет деталь из заказа и меняет статус, если больше нет деталей.
+	 */
 	@GetMapping("/removePart")
 	public String removePart(@RequestParam Integer detailId, @RequestParam Integer saleOrderId) {
 		if (SaleOrderStatus.READY.name().equals(service.getCurrentStatusOfSaleOrder(saleOrderId))) {
@@ -156,32 +181,44 @@ public class SaleOrderController {
 		return "redirect:parts?id=" + saleOrderId;
 	}
 
+	/**
+	 * Увеличивает количество по позиции на +1.
+	 */
 	@GetMapping("/increaseQty")
 	public String increaseQty(@RequestParam Integer detailId, @RequestParam Integer saleOrderId) {
-		log.info("Inside increaseQty():");
+		log.info("Увеличение количества на 1");
 		service.updateSaleOrderDetailQtyByDetailId(1, detailId);
 		return "redirect:parts?id=" + saleOrderId;
 	}
 
+	/**
+	 * Уменьшает количество по позиции на -1.
+	 */
 	@GetMapping("/decreaseQty")
 	public String decreaseQty(@RequestParam Integer detailId, @RequestParam Integer saleOrderId) {
-		log.info("Inside decreaseQty():");
+		log.info("Уменьшение количества на 1");
 		service.updateSaleOrderDetailQtyByDetailId(-1, detailId);
 		return "redirect:parts?id=" + saleOrderId;
 	}
 
+	/**
+	 * Переводит заказ в статус CONFIRM.
+	 */
 	@GetMapping("/placeOrder")
 	public String placeOrder(@RequestParam Integer saleOrderId) {
-		log.info("Inside placeOrder():");
+		log.info("Подтверждение заказа (CONFIRM)");
 		if (SaleOrderStatus.READY.name().equals(service.getCurrentStatusOfSaleOrder(saleOrderId))) {
 			service.updateSaleOrderStatus(saleOrderId, SaleOrderStatus.CONFIRM.name());
 		}
 		return "redirect:parts?id=" + saleOrderId;
 	}
 
+	/**
+	 * Отменяет заказ, если он ещё не отменён.
+	 */
 	@GetMapping("/cancelOrder")
 	public String cancelOrder(@RequestParam Integer id) {
-		log.info("Inside cancelOrder():");
+		log.info("Отмена заказа");
 		String status = service.getCurrentStatusOfSaleOrder(id);
 		if (SaleOrderStatus.READY.name().equals(status) || SaleOrderStatus.CONFIRM.name().equals(status)
 				|| SaleOrderStatus.OPEN.name().equals(status) || !SaleOrderStatus.CANCELLED.name().equals(status)) {
@@ -190,22 +227,31 @@ public class SaleOrderController {
 		return "redirect:all";
 	}
 
+	/**
+	 * Переводит заказ в статус INVOICED.
+	 */
 	@GetMapping("/generate")
 	public String generateInvoice(@RequestParam Integer id) {
-		log.info("Inside generateInvoice():");
+		log.info("Генерация счёта (INVOICED)");
 		service.updateSaleOrderStatus(id, SaleOrderStatus.INVOICED.name());
 		return "redirect:all";
 	}
 
+	/**
+	 * Генерирует PDF-счёт для клиента.
+	 */
 	@GetMapping("/print")
 	public ModelAndView showCustomerInvoice(@RequestParam Integer id) {
-		log.info("Inside showCustomerInvoice():");
+		log.info("Генерация PDF для клиента");
 		ModelAndView mav = new ModelAndView();
 		mav.setView(new CustomerInvoicePDFView());
+
 		List<SaleOrderDetails> list = service.getSaleDtlsBySaleOrderId(id);
 		mav.addObject("list", list);
+
 		SaleOrder saleOrder = service.getOneSaleOrder(id);
 		mav.addObject("saleOrder", saleOrder);
+
 		return mav;
 	}
 }

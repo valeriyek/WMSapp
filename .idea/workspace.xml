@@ -6,20 +6,13 @@
   <component name="ChangeListManager">
     <list default="true" id="b7333457-b5e6-493f-82fc-60b81c498e0e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/aspects/LoggingAspect.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/aspects/LoggingAspect.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/config/AppConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/config/AppConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/config/MailConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/config/MailConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/config/SwaggerConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/config/SwaggerConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/consts/GrnDtlStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/consts/GrnDtlStatus.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/consts/PurchaseOrderStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/consts/PurchaseOrderStatus.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/consts/RoleType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/consts/RoleType.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/consts/SaleOrderStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/consts/SaleOrderStatus.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/consts/ShipingDetailStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/consts/ShipingDetailStatus.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/consts/UserMode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/consts/UserMode.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/DocumentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/DocumentController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/GrnController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/GrnController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/OrderMethodController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/OrderMethodController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/PartController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/PartController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/PurchaseOrderController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/PurchaseOrderController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/SaleOrderController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/SaleOrderController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/ShipingController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/ShipingController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/ShipmentTypeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/ShipmentTypeController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/UomController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/UomController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/UserInfoController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/controller/UserInfoController.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,21 +46,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.WarehouseApplication.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "master",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/vk701/Documents/Documents/IntellijIdea/UPDATE/WMSapp",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "reference.settings.project.maven.runner"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.WarehouseApplication.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/vk701/Documents/Documents/IntellijIdea/UPDATE/WMSapp&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.project.maven.runner&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="WarehouseApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="ru.demo.wms.WarehouseApplication" />
