@@ -1,29 +1,4 @@
 package ru.demo.wms.custom.handler;
-/*
-Этот обработчик исключений CustomExceptionHandler использует @RestControllerAdvice, 
-чтобы предоставить централизованный способ обработки исключений для вашего приложения. 
-При возникновении исключений UomNotFoundException или ShipmentTypeNotFoundException, 
-соответствующие методы в этом классе будут перехватывать их и возвращать клиенту подробную информацию об ошибке.
-
-В каждом из методов обработчика исключений используется класс ErrorType для создания 
-тела ответа, который включает в себя текущее время (new Date().toString()), модуль, 
-где произошло исключение, и сообщение исключения.
-
-@ExceptionHandler(UomNotFoundException.class): Этот метод обрабатывает исключения 
-UomNotFoundException. Он создает объект ErrorType с сообщением об ошибке, указывая, 
-что исключение произошло в модуле "UOM", и возвращает его в теле ответа со статусом 
-HttpStatus.INTERNAL_SERVER_ERROR.
-
-@ExceptionHandler(ShipmentTypeNotFoundException.class): Аналогично первому методу, 
-но для обработки исключений ShipmentTypeNotFoundException. Ошибка указывает 
-на проблему в модуле "SHIPMENT TYPE".
-
-Каждый метод обрабатывает свой тип исключения, возвращая клиенту информативный ответ 
-о произошедшей ошибке. Использование HttpStatus.INTERNAL_SERVER_ERROR говорит о том, 
-что ошибка произошла на стороне сервера. Однако, в зависимости от контекста проблемы, возможно, 
-будет более уместно использовать другой статус ответа, например, HttpStatus.NOT_FOUND для ситуаций, 
-когда что-то не было найдено.
-*/
 
 import java.util.Date;
 
@@ -36,34 +11,47 @@ import ru.demo.wms.custom.error.ErrorType;
 import ru.demo.wms.exception.ShipmentTypeNotFoundException;
 import ru.demo.wms.exception.UomNotFoundException;
 
+/**
+ * Глобальный обработчик исключений для REST-контроллеров.
+ * Перехватывает специфические исключения и возвращает
+ * структурированный ответ с деталями ошибки.
+ */
 @RestControllerAdvice
 public class CustomExceptionHandler {
 
+	/**
+	 * Обрабатывает исключения, возникающие при отсутствии UOM (единицы измерения).
+	 *
+	 * @param unfe объект исключения UomNotFoundException
+	 * @return ответ с информацией об ошибке и HTTP статусом 500
+	 */
 	@ExceptionHandler(UomNotFoundException.class)
-	public ResponseEntity<ErrorType> handleUomNotFound(
-			UomNotFoundException unfe
-			)
-	{
-		return new ResponseEntity<ErrorType>(
+	public ResponseEntity<ErrorType> handleUomNotFound(UomNotFoundException unfe) {
+		return new ResponseEntity<>(
 				new ErrorType(
-						new Date().toString(), 
-						"UOM", 
-						unfe.getMessage()
-						),
-				HttpStatus.INTERNAL_SERVER_ERROR);
+						new Date().toString(),   // Время возникновения ошибки
+						"UOM",                   // Название модуля, где произошла ошибка
+						unfe.getMessage()        // Сообщение об ошибке
+				),
+				HttpStatus.INTERNAL_SERVER_ERROR
+		);
 	}
-	
+
+	/**
+	 * Обрабатывает исключения, возникающие при отсутствии типа доставки.
+	 *
+	 * @param unfe объект исключения ShipmentTypeNotFoundException
+	 * @return ответ с информацией об ошибке и HTTP статусом 500
+	 */
 	@ExceptionHandler(ShipmentTypeNotFoundException.class)
-	public ResponseEntity<ErrorType> handleShipmentTypeNotFound(
-			ShipmentTypeNotFoundException unfe
-			)
-	{
-		return new ResponseEntity<ErrorType>(
+	public ResponseEntity<ErrorType> handleShipmentTypeNotFound(ShipmentTypeNotFoundException unfe) {
+		return new ResponseEntity<>(
 				new ErrorType(
-						new Date().toString(), 
-						"SHIPMENT TYPE", 
-						unfe.getMessage()
-						),
-				HttpStatus.INTERNAL_SERVER_ERROR);
+						new Date().toString(),   // Время возникновения ошибки
+						"SHIPMENT TYPE",         // Название модуля, где произошла ошибка
+						unfe.getMessage()        // Сообщение об ошибке
+				),
+				HttpStatus.INTERNAL_SERVER_ERROR
+		);
 	}
 }

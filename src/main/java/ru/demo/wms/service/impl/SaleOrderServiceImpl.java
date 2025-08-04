@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import ru.demo.wms.exception.SaleOrderNotFoundExceptio;
+import ru.demo.wms.exception.SaleOrderNotFoundException;
 import ru.demo.wms.model.SaleOrder;
 import ru.demo.wms.model.SaleOrderDetails;
 import ru.demo.wms.repo.SaleOrderDetailsRepository;
@@ -39,7 +39,7 @@ public class SaleOrderServiceImpl implements ISaleOrderService {
 	@Override
 	public SaleOrder getOneSaleOrder(Integer id) {
 
-		return repository.findById(id).orElseThrow(() -> new SaleOrderNotFoundExceptio("Sale Order Exit"));
+		return repository.findById(id).orElseThrow(() -> new SaleOrderNotFoundException("Sale Order Exit"));
 	}
 
 
