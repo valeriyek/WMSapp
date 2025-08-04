@@ -24,21 +24,7 @@ import org.springframework.http.ResponseEntity;
 /**
  * Контроллер для управления документами.
  * <p>
- * Предоставляет функции:
- * <ul>
- *   <li>Отображение страницы со списком документов</li>
- *   <li>Загрузка документов</li>
- *   <li>Скачивание документов</li>
- *   <li>Удаление документов</li>
- *   <li>Генерация PDF-отчёта по документам</li>
- * </ul>
- *
- * <h3>TODO</h3>
- * <ul>
- *   <li>Заменить e.printStackTrace() на логирование через логгер</li>
- *   <li>Проверять MIME-типы и имена файлов для безопасности</li>
- *   <li>Применить DTO вместо прямой работы с сущностями</li>
- * </ul>
+ * Реализует загрузку, скачивание, удаление документов и генерацию PDF-отчёта.
  */
 @Controller
 @RequestMapping("/doc")
@@ -52,7 +38,12 @@ public class DocumentController {
     @Autowired
     private ReportService reportService;
 
-    // 1. Отобразить страницу со всеми документами
+    /**
+     * Отображает страницу со списком всех документов.
+     *
+     * @param model модель для передачи атрибутов в представление
+     * @return имя шаблона отображения
+     */
     @GetMapping("/all")
     public String showDocs(Model model) {
         model.addAttribute("idVal", System.currentTimeMillis());
@@ -61,7 +52,13 @@ public class DocumentController {
         return "Documents";
     }
 
-    // 2. Загрузить новый документ
+    /**
+     * Загружает документ в базу данных.
+     *
+     * @param docId идентификатор документа
+     * @param docOb объект загружаемого файла
+     * @return редирект на страницу со списком документов
+     */
     @PostMapping("/upload")
     public String uploadDoc(@RequestParam Long docId, @RequestParam MultipartFile docOb) {
         try {
@@ -76,24 +73,29 @@ public class DocumentController {
         return "redirect:all";
     }
 
-    // 3. Скачать документ по ID
+    /**
+     * Скачивает документ по его ID.
+     *
+     * @param id       идентификатор документа
+     * @param response HTTP-ответ с бинарными данными
+     */
     @GetMapping("/download")
     public void downloadDoc(@RequestParam Long id, HttpServletResponse response) {
         try {
-            // Получить объект из базы данных
             Document doc = service.getDocumentById(id);
-
-            // Установить заголовок с именем файла
             response.setHeader("Content-Disposition", "attachment;filename=" + doc.getDocName());
-
-            // Скопировать данные в выходной поток
             FileCopyUtils.copy(doc.getDocData(), response.getOutputStream());
         } catch (Exception e) {
             LOG.error("Ошибка при скачивании документа", e);
         }
     }
 
-    // 4. Удалить документ по ID
+    /**
+     * Удаляет документ по его ID.
+     *
+     * @param id идентификатор документа
+     * @return редирект на страницу со списком документов
+     */
     @GetMapping("/delete")
     public String deleteDoc(@RequestParam Long id) {
         try {
@@ -104,7 +106,11 @@ public class DocumentController {
         return "redirect:all";
     }
 
-    // 5. Сгенерировать PDF-отчёт по документам
+    /**
+     * Генерирует PDF-отчёт по документам.
+     *
+     * @return ответ с готовым PDF-файлом
+     */
     @GetMapping("/generateReport")
     public ResponseEntity<byte[]> generateDocumentsReport() {
         byte[] data = reportService.createDocumentsReport();

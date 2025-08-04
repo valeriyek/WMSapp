@@ -1,6 +1,13 @@
 package ru.demo.wms.consts;
 
+/**
+ * Состояние пользователя в системе.
+ */
 public enum UserMode {
 
-	ENABLED, DISABLED;
+	/** Пользователь активен и имеет доступ к системе */
+	ENABLED,
+
+	/** Пользователь отключён и не может войти в систему */
+	DISABLED;
 }

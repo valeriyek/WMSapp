@@ -22,28 +22,9 @@ import ru.demo.wms.service.IGrnService;
 import ru.demo.wms.service.IPurchaseOrderService;
 
 /**
- * <h3>Контроллер для управления приходными ордерами (GRN)</h3>
+ * Контроллер для управления приходными ордерами (GRN — Goods Receipt Note).
  * <p>
- * Этот контроллер отвечает за обработку операций, связанных с GRN в системе складского учёта.
- * </p>
- *
- * <h4>Функциональность:</h4>
- * <ul>
- *   <li>Отображение формы регистрации GRN</li>
- *   <li>Сохранение GRN на основе заказа на закупку</li>
- *   <li>Отображение списка всех GRN</li>
- *   <li>Просмотр деталей GRN</li>
- *   <li>Обновление статуса позиции GRN (Принято / Отклонено)</li>
- * </ul>
- *
- * <h4>Рекомендации по улучшению:</h4>
- * <ul>
- *   <li>Заменить <code>e.printStackTrace()</code> на логирование через логгер</li>
- *   <li>Использовать <code>@ControllerAdvice</code> для централизованной обработки ошибок</li>
- *   <li>Проводить валидацию пользовательских данных</li>
- *   <li>Вынести логику преобразования деталей заказа в отдельный сервис</li>
- *   <li>Убедиться в корректной настройке каскадного сохранения</li>
- * </ul>
+ * Отвечает за создание, отображение и детализацию GRN, а также за обновление статусов строк.
  */
 @Controller
 @RequestMapping("/grn")
@@ -55,38 +36,48 @@ public class GrnController {
 	@Autowired
 	private IPurchaseOrderService orderService;
 
-	// Подготовить список заказов со статусом INVOICED
+	/**
+	 * Подготавливает список заказов со статусом INVOICED для отображения на форме GRN.
+	 *
+	 * @param model модель данных
+	 */
 	private void commonUi(Model model) {
 		model.addAttribute("pos",
 				orderService.getPoIdAndCodesByStatus(PurchaseOrderStatus.INVOICED.name())
 		);
 	}
 
-	// 1. Отобразить страницу регистрации GRN
+	/**
+	 * Отображает форму для регистрации нового GRN.
+	 *
+	 * @param model модель данных
+	 * @return имя шаблона для регистрации GRN
+	 */
 	@GetMapping("/register")
 	public String showReg(Model model) {
 		commonUi(model);
 		return "GrnRegister";
 	}
 
-	// 2. Сохранить GRN и обновить статус заказа
+	/**
+	 * Сохраняет новый GRN и обновляет статус соответствующего заказа на закупку.
+	 *
+	 * @param grn   приходной ордер, полученный с формы
+	 * @param model модель данных
+	 * @return редирект на страницу регистрации GRN
+	 */
 	@PostMapping("/save")
 	public String saveGrn(@ModelAttribute Grn grn, Model model) {
 		try {
-			// Сформировать детали GRN из деталей заказа
-			createGrnDtlsByPo(grn);
-
-			// Сохранить GRN (включая GrnDtl через каскад)
+			createGrnDtlsByPo(grn); // создать строки GRN на основе заказа
 			Integer id = service.saveGrn(grn);
 
-			// Обновить статус заказа, если GRN успешно сохранён
 			if (id != null)
 				orderService.updatePoStatus(
 						((Grn) grn.getPo()).getId(),
 						PurchaseOrderStatus.RECEIVED.name()
 				);
 
-			// Сообщение об успехе
 			model.addAttribute("message", "GRN '" + id + "' СОЗДАН");
 		} catch (Exception e) {
 			e.printStackTrace(); // TODO: заменить на логгер
@@ -96,7 +87,11 @@ public class GrnController {
 		return "GrnRegister";
 	}
 
-	// Метод для преобразования деталей заказа в детали GRN
+	/**
+	 * Преобразует строки заказа в строки GRN.
+	 *
+	 * @param grn приходной ордер, для которого создаются детали
+	 */
 	private void createGrnDtlsByPo(Grn grn) {
 		Integer poId = ((Grn) grn.getPo()).getId();
 		List<PurchaseDtl> poDtls = orderService.getPurchaseDtlsByPoId(poId);
@@ -113,7 +108,12 @@ public class GrnController {
 		grn.setDtls(grnSet);
 	}
 
-	// 3. Отобразить список всех GRN
+	/**
+	 * Отображает список всех GRN.
+	 *
+	 * @param model модель данных
+	 * @return имя шаблона с таблицей GRN
+	 */
 	@GetMapping("/all")
 	public String showAll(Model model) {
 		List<Grn> grns = service.fetchAllGrns();
@@ -121,7 +121,13 @@ public class GrnController {
 		return "GrnData";
 	}
 
-	// 4. Отобразить детали GRN по ID
+	/**
+	 * Отображает детали GRN (строки) по его идентификатору.
+	 *
+	 * @param id    ID GRN
+	 * @param model модель данных
+	 * @return имя шаблона с деталями GRN
+	 */
 	@GetMapping("/parts")
 	public String showGrnDtlsByGrnId(@RequestParam Integer id, Model model) {
 		Grn grn = service.getOneGrn(id);
@@ -130,14 +136,26 @@ public class GrnController {
 		return "GrnParts";
 	}
 
-	// 5. Обновить статус детали GRN на "Принято"
+	/**
+	 * Обновляет статус строки GRN на {@code ACCEPTED}.
+	 *
+	 * @param id    ID GRN
+	 * @param dtlId ID строки GRN
+	 * @return редирект обратно к деталям GRN
+	 */
 	@GetMapping("/accept")
 	public String updateAccepted(@RequestParam Integer id, @RequestParam Integer dtlId) {
 		service.updateGrnDtlStatus(dtlId, GrnDtlStatus.ACCEPTED.name());
 		return "redirect:parts?id=" + id;
 	}
 
-	// 6. Обновить статус детали GRN на "Отклонено"
+	/**
+	 * Обновляет статус строки GRN на {@code REJECTED}.
+	 *
+	 * @param id    ID GRN
+	 * @param dtlId ID строки GRN
+	 * @return редирект обратно к деталям GRN
+	 */
 	@GetMapping("/reject")
 	public String updateRejected(@RequestParam Integer id, @RequestParam Integer dtlId) {
 		service.updateGrnDtlStatus(dtlId, GrnDtlStatus.REJECTED.name());

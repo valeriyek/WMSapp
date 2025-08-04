@@ -10,6 +10,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+/**
+ * Конфигурация безопасности приложения с использованием Spring Security.
+ * <p>
+ * Определяет правила авторизации, формы входа и выхода, а также обработку ошибок.
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -20,40 +25,60 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
 
+	/**
+	 * Настраивает источник аутентификации — сервис загрузки пользователей и кодировщик паролей.
+	 *
+	 * @param auth билдер менеджера аутентификации
+	 * @throws Exception в случае ошибки конфигурации
+	 */
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.userDetailsService(userDetailsService)
 				.passwordEncoder(passwordEncoder);
 	}
 
+	/**
+	 * Определяет правила авторизации, конфигурацию форм логина и выхода,
+	 * а также страницы по умолчанию и при ошибках.
+	 *
+	 * @param http объект конфигурации HTTP безопасности
+	 * @throws Exception в случае ошибки конфигурации
+	 */
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		// Настроить авторизацию
 		http.authorizeRequests()
+				// Публичные маршруты (доступны всем без авторизации)
 				.antMatchers("/rest/api/**", "/user/login", "/user/showForgot", "/user/reGenNewPwd").permitAll()
 				.antMatchers("/user/showUserActiveOtp", "/user/doUserActiveOtp").permitAll()
+
+				// Доступны пользователям с ролями ADMIN или APPUSER
 				.antMatchers("/uom/**", "/st/**", "/om/**", "/part/**", "/wh/**").hasAnyAuthority("ADMIN", "APPUSER")
+				// Доступны только пользователям с ролью APPUSER
 				.antMatchers("/po/**", "/grn/**", "/sale/**", "/shiping/**").hasAuthority("APPUSER")
+				// Регистрация новых пользователей доступна только ADMIN
 				.antMatchers("/user/register", "/user/create").hasAuthority("ADMIN")
+
+				// Все остальные запросы требуют аутентификации
 				.anyRequest().authenticated()
 
-				// Настроить параметры входа
+				// Конфигурация формы логина
 				.and()
 				.formLogin()
-				.loginPage("/user/login") // Задать страницу входа (GET)
-				.loginProcessingUrl("/login") // Задать URL для обработки логина (POST)
-				.defaultSuccessUrl("/user/setup", true) // Задать страницу после успешного входа
-				.failureUrl("/user/login?error") // Задать URL при ошибке входа
+				.loginPage("/user/login") // Страница входа (GET)
+				.loginProcessingUrl("/login") // URL для обработки логина (POST)
+				.defaultSuccessUrl("/user/setup", true) // Страница после успешного входа
+				.failureUrl("/user/login?error") // Страница при ошибке входа
 
-				// Настроить параметры выхода
+				// Конфигурация выхода из системы
 				.and()
 				.logout()
-				.logoutRequestMatcher(new AntPathRequestMatcher("/logout")) // Задать URL выхода
-				.logoutSuccessUrl("/user/login?logout") // Задать страницу после выхода
+				.logoutRequestMatcher(new AntPathRequestMatcher("/logout")) // URL выхода
+				.logoutSuccessUrl("/user/login?logout") // Перенаправление после выхода
 
-				// Настроить обработку ошибок
+				// Обработка ошибок доступа
 				.and()
 				.exceptionHandling()
-				.accessDeniedPage("/user/denied"); // Задать страницу при отказе в доступе
+				.accessDeniedPage("/user/denied"); // Страница при отказе в доступе
 	}
+
 }
