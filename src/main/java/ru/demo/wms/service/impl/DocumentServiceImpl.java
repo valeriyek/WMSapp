@@ -2,6 +2,8 @@ package ru.demo.wms.service.impl;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,59 +11,75 @@ import ru.demo.wms.model.Document;
 import ru.demo.wms.repo.DocumentRepository;
 import ru.demo.wms.service.IDocumentService;
 
+/**
+ * Сервисный класс, реализующий бизнес-логику управления документами.
+ * <p>
+ * Предоставляет методы для сохранения, удаления и получения документов из базы данных.
+ */
 @Service
 public class DocumentServiceImpl implements IDocumentService {
 
+	private static final Logger LOG = LoggerFactory.getLogger(DocumentServiceImpl.class);
+
 	@Autowired
 	private DocumentRepository repo;
-	
+
+	/**
+	 * Сохраняет документ в базе данных.
+	 *
+	 * @param doc объект {@link Document} для сохранения
+	 */
+	@Override
 	public void saveDocument(Document doc) {
+		LOG.info("Сохраняется документ: {}", doc.getDocName());
 		repo.save(doc);
+		LOG.info("Документ успешно сохранён.");
 	}
 
+	/**
+	 * Возвращает список ID и имён всех документов.
+	 * Используется, например, для выпадающих списков.
+	 *
+	 * @return список массивов объектов, содержащих ID и имя документа
+	 */
+	@Override
 	public List<Object[]> getDocumentIdAndName() {
+		LOG.info("Получение ID и имён всех документов");
 		return repo.getDocumentIdAndName();
 	}
-	
+
+	/**
+	 * Удаляет документ по ID.
+	 *
+	 * @param id идентификатор документа
+	 * @throws RuntimeException если документ не существует
+	 */
+	@Override
 	public void deleteDocumentById(Long id) {
-		if(repo.existsById(id))
+		LOG.info("Попытка удалить документ с ID = {}", id);
+		if (repo.existsById(id)) {
 			repo.deleteById(id);
-		else 
-			throw new RuntimeException("Document Not exist");
+			LOG.info("Документ с ID = {} успешно удалён.", id);
+		} else {
+			LOG.warn("Документ с ID = {} не существует.", id);
+			throw new RuntimeException("Документ с ID " + id + " не существует.");
+		}
 	}
-	
+
+	/**
+	 * Возвращает документ по ID.
+	 *
+	 * @param id идентификатор документа
+	 * @return найденный объект {@link Document}
+	 * @throws RuntimeException если документ не найден
+	 */
+	@Override
 	public Document getDocumentById(Long id) {
-		return repo.findById(id).orElseThrow(
-				()->new RuntimeException("Document Not exist")
-				);
+		LOG.info("Поиск документа по ID = {}", id);
+		return repo.findById(id)
+				.orElseThrow(() -> {
+					LOG.error("Документ с ID = {} не найден.", id);
+					return new RuntimeException("Документ с ID " + id + " не найден.");
+				});
 	}
-
 }
-/*
-Класс DocumentServiceImpl реализует бизнес-логику для работы с документами в приложении, обеспечивая базовые операции, такие как сохранение, удаление и получение информации о документах. Давайте разберем ключевые аспекты этой реализации:
-
-Внедрение зависимостей:
-DocumentRepository: Используется для взаимодействия с базой данных. Аннотация @Autowired обеспечивает автоматическое внедрение экземпляра DocumentRepository в DocumentServiceImpl, позволяя сервису использовать репозиторий для выполнения операций с базой данных.
-Методы сервиса:
-saveDocument: Сохраняет документ в базе данных. Принимает объект Document и использует метод save репозитория для его сохранения или обновления.
-
-getDocumentIdAndName: Возвращает список идентификаторов и названий документов. Этот метод может использоваться, например, для отображения списка документов без загрузки всей информации о каждом документе.
-
-deleteDocumentById: Удаляет документ по его идентификатору. Сначала проверяет существование документа в базе данных с помощью existsById; если документ существует, он удаляется методом deleteById. В противном случае генерируется исключение, сообщающее об отсутствии документа.
-
-getDocumentById: Возвращает документ по его идентификатору. Использует метод findById репозитория, который возвращает Optional<Document>. Если документ существует, возвращается его экземпляр; в противном случае генерируется исключение.
-
-Потенциальные улучшения:
-Обработка исключений: Вместо генерации RuntimeException при отсутствии документа рекомендуется создать и использовать специализированные исключения, например, DocumentNotFoundException. Это улучшит читаемость кода и облегчит обработку ошибок на уровне контроллеров или глобальных обработчиков исключений.
-
-Типобезопасность для идентификаторов: Если в вашей модели Document идентификатор определен как Long, стоит использовать этот тип во всех соответствующих методах сервиса и репозитория для избежания путаницы и повышения читаемости кода.
-
-Логирование: Добавление логирования операций может помочь в отладке и мониторинге выполнения операций, особенно при обработке исключений и выполнении ключевых бизнес-операций.
-
-Общие рекомендации:
-Код ответа и сообщения об ошибках: Для API или пользовательского интерфейса может быть полезно предусмотреть возвращение не только текста ошибки, но и специфического кода ошибки, что упростит обработку ошибок на клиенте.
-
-Документация и комментарии: Комментирование публичных методов сервиса поможет другим разработчикам быстрее понять назначение и способы использования методов сервиса.
-
-DocumentServiceImpl является важным компонентом для управления документами в приложении, и его дальнейшее развитие и рефакторинг могут существенно повысить качество кода и удобство работы с системой.
-*/

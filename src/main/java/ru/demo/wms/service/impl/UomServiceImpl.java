@@ -12,70 +12,111 @@ import ru.demo.wms.repo.UomRepository;
 import ru.demo.wms.service.IUomService;
 import ru.demo.wms.util.MyAppUtil;
 
+/**
+ * Сервис для работы с единицами измерения (UOM).
+ * Предоставляет CRUD-функции, валидацию и выборку для отображения в интерфейсе.
+ */
 @Service
 public class UomServiceImpl implements IUomService {
-@Autowired
+
+	@Autowired
 	private MyAppUtil myAppUtil;
+
 	@Autowired
 	private UomRepository repo;
+
+	/**
+	 * Сохраняет новую единицу измерения и возвращает её ID.
+	 *
+	 * @param uom объект Uom
+	 * @return ID сохранённого объекта
+	 */
+	@Override
 	public Integer saveUom(Uom uom) {
-		uom = repo.save(uom);
-		return uom.getId();
+		return repo.save(uom).getId();
 	}
 
+	/**
+	 * Обновляет существующую единицу измерения.
+	 * Если объект не найден — выбрасывается исключение.
+	 *
+	 * @param uom объект Uom для обновления
+	 * @throws UomNotFoundException если объект не существует
+	 */
+	@Override
 	public void updateUom(Uom uom) {
-		if(uom.getId() == null || !repo.existsById(uom.getId())) {
+		if (uom.getId() == null || !repo.existsById(uom.getId())) {
 			throw new UomNotFoundException(
-					"Uom '"+(uom.getId()==null?"id":uom.getId())+"' not exist for update!");
-		} else {
-			repo.save(uom);
+					"Uom '" + (uom.getId() == null ? "id" : uom.getId()) + "' not exist for update!");
 		}
-		
+		repo.save(uom);
 	}
 
+	/**
+	 * Удаляет единицу измерения по ID.
+	 *
+	 * @param id идентификатор UOM
+	 */
+	@Override
 	public void deleteUom(Integer id) {
 		repo.delete(getOneUom(id));
 	}
 
+	/**
+	 * Возвращает одну единицу измерения по ID.
+	 *
+	 * @param id идентификатор
+	 * @return объект Uom
+	 * @throws UomNotFoundException если не найден
+	 */
+	@Override
 	public Uom getOneUom(Integer id) {
 		return repo.findById(id)
-				.orElseThrow(
-						()->new UomNotFoundException(
-								"Uom '"+id+"' Not exist")
-						);
+				.orElseThrow(() -> new UomNotFoundException("Uom '" + id + "' Not exist"));
 	}
 
+	/**
+	 * Возвращает список всех единиц измерения.
+	 *
+	 * @return список объектов Uom
+	 */
+	@Override
 	public List<Uom> getAllUoms() {
 		return repo.findAll();
 	}
 
+	/**
+	 * Проверяет, существует ли модель единицы измерения.
+	 *
+	 * @param uomModel модель
+	 * @return true, если такая модель уже есть
+	 */
+	@Override
 	public boolean isUomModelExist(String uomModel) {
-		return repo.getUomModelCount(uomModel)>0;
+		return repo.getUomModelCount(uomModel) > 0;
 	}
 
+	/**
+	 * Проверяет наличие модели единицы измерения, исключая текущий ID (для редактирования).
+	 *
+	 * @param uomModel модель
+	 * @param id       идентификатор текущего объекта
+	 * @return true, если дубликат существует
+	 */
+	@Override
 	public boolean isUomModelExistForEdit(String uomModel, Integer id) {
-		return repo.getUomModelCountForEdit(uomModel, id)>0;
+		return repo.getUomModelCountForEdit(uomModel, id) > 0;
 	}
 
+	/**
+	 * Возвращает карту ID → модель единицы измерения.
+	 * Используется, например, для выпадающих списков.
+	 *
+	 * @return карта ID и моделей
+	 */
+	@Override
 	public Map<Integer, String> getUomIdAndModel() {
-		List<Object[]> list =  repo.getUomIdAndModel();
+		List<Object[]> list = repo.getUomIdAndModel();
 		return myAppUtil.convertListToMap(list);
-		
 	}
-
 }
-/*
-Класс UomServiceImpl реализует интерфейс IUomService, предоставляя логику для управления единицами измерения (UOM) в системе. Этот сервис включает операции CRUD для работы с объектами Uom, а также проверку на уникальность и получение агрегированных данных. Давайте разберем основные аспекты этой реализации и предложим улучшения.
-
-Основные функции:
-CRUD операции: Предоставляются методы для создания (saveUom), обновления (updateUom), удаления (deleteUom), и получения (getOneUom, getAllUoms) единиц измерения.
-Проверка на уникальность: Методы isUomModelExist и isUomModelExistForEdit проверяют, существует ли уже единица измерения с заданной моделью, что важно для обеспечения уникальности данных.
-Агрегация данных: Метод getUomIdAndModel извлекает данные о всех единицах измерения для последующего использования, например, в пользовательских интерфейсах.
-Возможные улучшения:
-Обработка исключений: Использование специализированных исключений, таких как UomNotFoundException, помогает в более точной обработке ошибочных ситуаций. Возможно, стоит рассмотреть создание иерархии исключений для различных типов ошибок в приложении.
-Логирование: Добавление логирования к ключевым операциям может улучшить отслеживание работы приложения и упростить диагностику проблем. Рекомендуется использовать различные уровни логирования (INFO, DEBUG, ERROR) для разных ситуаций.
-Транзакционность: Обеспечение транзакционности операций, влияющих на данные, может предотвратить неконсистентность данных в случае возникновения ошибок.
-Валидация данных: Внедрение логики валидации на уровне сервиса может помочь предотвратить добавление некорректных данных в систему и улучшить качество пользовательского опыта.
-Использование DTO и маппинга: Применение DTO (Data Transfer Objects) и библиотек маппинга (например, ModelMapper или MapStruct) может облегчить преобразование данных между слоями и улучшить архитектурную чистоту приложения.
-UomServiceImpl играет ключевую роль в управлении единицами измерения в системе, обеспечивая необходимые операции для поддержки бизнес-процессов. Применение предложенных улучшений может повысить надежность, удобство поддержки и масштабируемость сервиса.
-*/

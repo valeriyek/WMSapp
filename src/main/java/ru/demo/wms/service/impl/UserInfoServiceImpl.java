@@ -19,6 +19,11 @@ import ru.demo.wms.model.UserInfo;
 import ru.demo.wms.repo.UserInfoRepository;
 import ru.demo.wms.service.IUserInfoService;
 
+/**
+ * Сервис, реализующий бизнес-логику по работе с пользователями.
+ * Также реализует интерфейс Spring Security {@link UserDetailsService}
+ * для обеспечения авторизации и аутентификации.
+ */
 @Service
 public class UserInfoServiceImpl implements IUserInfoService, UserDetailsService {
 
@@ -28,74 +33,96 @@ public class UserInfoServiceImpl implements IUserInfoService, UserDetailsService
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
 
+	/**
+	 * Сохраняет нового пользователя с хэшированием пароля.
+	 *
+	 * @param ui объект пользователя
+	 * @return ID сохраненного пользователя
+	 */
+	@Override
 	public Integer saveUserInfo(UserInfo ui) {
-
-		String pwd = ui.getPassword();
-
-		String encPwd = passwordEncoder.encode(pwd);
-
+		String encPwd = passwordEncoder.encode(ui.getPassword());
 		ui.setPassword(encPwd);
-
 		return repo.save(ui).getId();
 	}
 
+	/**
+	 * Возвращает список всех пользователей.
+	 *
+	 * @return список {@link UserInfo}
+	 */
+	@Override
 	public List<UserInfo> getAllUserInfos() {
 		return repo.findAll();
 	}
 
-	public UserDetails loadUserByUsername(String username) 
+	/**
+	 * Загружает пользователя по email для Spring Security.
+	 * Если пользователь не найден или отключён, выбрасывается исключение.
+	 *
+	 * @param username email пользователя
+	 * @return объект {@link UserDetails}
+	 * @throws UsernameNotFoundException если пользователь не найден или отключён
+	 */
+	@Override
+	public UserDetails loadUserByUsername(String username)
 			throws UsernameNotFoundException {
-		Optional<UserInfo> opt = repo.findByEmail(username);
-		if(!opt.isPresent() || opt.get().getMode().equals(UserMode.DISABLED)) {
-				throw new UsernameNotFoundException("User not exist");
-		}
-		UserInfo info = opt.get();
-		return new User(
-				info.getEmail(),  // username 
-				info.getPassword(),  // password
-				info.getRoles()   //authorities
-				.stream()
-				.map(r -> new SimpleGrantedAuthority( r.getRole().name() ))
-				.collect(Collectors.toSet())
-				);	
+		return repo.findByEmail(username)
+				.filter(user -> user.getMode().equals(UserMode.ENABLED))
+				.map(user -> new User(
+						user.getEmail(),
+						user.getPassword(),
+						user.getRoles().stream()
+								.map(role -> new SimpleGrantedAuthority(role.getRole().name()))
+								.collect(Collectors.toSet())
+				))
+				.orElseThrow(() -> new UsernameNotFoundException("User not exist"));
 	}
 
+	/**
+	 * Возвращает пользователя по email, если существует.
+	 *
+	 * @param email email
+	 * @return {@link Optional} с пользователем
+	 */
+	@Override
 	public Optional<UserInfo> getOneUserInfoByEmail(String email) {
 		return repo.findByEmail(email);
 	}
-	
+
+	/**
+	 * Обновляет статус пользователя (ENABLED / DISABLED).
+	 *
+	 * @param id   идентификатор пользователя
+	 * @param mode новый статус
+	 */
+	@Override
 	@Transactional
 	public void updateUserStatus(Integer id, UserMode mode) {
 		repo.updateUserStatus(id, mode);
 	}
-	
+
+	/**
+	 * Обновляет пароль пользователя.
+	 * Пароль не шифруется — предполагается, что шифрование выполнено заранее.
+	 *
+	 * @param email    email пользователя
+	 * @param password новый пароль
+	 */
+	@Override
 	@Transactional
 	public void updateUserPassword(String email, String password) {
 		repo.updateUserPassword(email, password);
 	}
-	
 
+	/**
+	 * Проверяет, существует ли пользователь с указанным email.
+	 *
+	 * @param email email
+	 * @return true, если пользователь существует
+	 */
 	@Override
 	public boolean isUserEmail(String email) {
-		
 		return repo.existsByEmail(email);
 	}
 }
-/*
-Класс UserInfoServiceImpl реализует два интерфейса: IUserInfoService для операций, связанных с пользователями в приложении, и UserDetailsService, требуемый Spring Security для аутентификации и авторизации. Это обеспечивает централизованное управление пользователями, включая регистрацию, обновление статуса и пароля, а также загрузку деталей пользователя для процессов безопасности. Давайте разберем ключевые моменты этой реализации:
-
-Важные аспекты:
-Внедрение зависимостей: Используется UserInfoRepository для взаимодействия с базой данных и BCryptPasswordEncoder для шифрования паролей пользователей.
-Шифрование паролей: При сохранении пользователя пароль шифруется с использованием BCryptPasswordEncoder, что повышает безопасность хранения паролей.
-Реализация loadUserByUsername: Этот метод загружает пользовательские данные по имени пользователя (в данном случае по email), необходимые для аутентификации и авторизации в Spring Security. При отсутствии пользователя или если он отключен, генерируется исключение UsernameNotFoundException.
-Возможные улучшения:
-Обработка исключений: Можно создать более специфические исключения для различных ошибочных ситуаций, связанных с пользователями, что улучшит управление ошибками и предоставит клиентам более детальную обратную связь.
-Логирование: Добавление логирования операций может помочь в отладке и мониторинге системы, особенно при работе с системами безопасности.
-Валидация данных: Рекомендуется включить шаги валидации для входящих данных перед их обработкой и сохранением, чтобы гарантировать корректность и безопасность данных.
-Разделение ответственности: Возможно, стоит рассмотреть разделение функционала между разными сервисами или классами, например, выделить работу с безопасностью в отдельный сервис, чтобы улучшить модульность и читаемость кода.
-Дополнительные замечания:
-Принципы SOLID: При дальнейшем развитии и расширении сервиса рекомендуется следовать принципам SOLID для обеспечения гибкости, расширяемости и удобства поддержки кода.
-Использование Optional: В методе loadUserByUsername, использование Optional может быть упрощено до цепочки вызовов orElseThrow, что улучшит читаемость.
-Управление транзакциями: Для методов, изменяющих данные, уже используется @Transactional, что обеспечивает корректность выполнения операций в рамках одной транзакции. Важно продолжать поддерживать эту практику при добавлении новых функций.
-UserInfoServiceImpl играет ключевую роль в управлении учетными записями пользователей и интеграции с механизмами безопасности Spring, обеспечивая надежную и безопасную работу с пользовательскими данными.
-*/

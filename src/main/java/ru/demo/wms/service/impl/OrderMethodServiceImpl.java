@@ -3,6 +3,8 @@ package ru.demo.wms.service.impl;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,88 +14,132 @@ import ru.demo.wms.repo.OrderMethodRepository;
 import ru.demo.wms.service.IOrderMethodService;
 import ru.demo.wms.util.MyAppUtil;
 
+/**
+ * Сервисный класс для управления методами заказа (OrderMethod).
+ * Реализует бизнес-логику, включая CRUD-операции, валидации и преобразования данных для UI.
+ */
 @Service
 public class OrderMethodServiceImpl implements IOrderMethodService {
 
-    @Autowired
+	private static final Logger LOG = LoggerFactory.getLogger(OrderMethodServiceImpl.class);
+
+	@Autowired
 	private MyAppUtil myAppUtil;
-    
+
 	@Autowired
 	private OrderMethodRepository repo;
 
+	/**
+	 * Сохраняет новый метод заказа.
+	 *
+	 * @param om объект OrderMethod
+	 * @return ID сохраненного метода
+	 */
+	@Override
 	public Integer saveOrderMethod(OrderMethod om) {
+		LOG.info("Сохранение нового метода заказа");
 		return repo.save(om).getId();
 	}
 
-
+	/**
+	 * Обновляет существующий метод заказа.
+	 *
+	 * @param om объект OrderMethod
+	 * @throws OrderMethodNotFound если ID отсутствует или метод не существует
+	 */
+	@Override
 	public void updateOrderMethod(OrderMethod om) {
-		if(om.getId()==null || !repo.existsById(om.getId()))
-			throw new OrderMethodNotFound("Order Method Not Exist");
-		repo.save(om).getId();
+		LOG.info("Обновление метода заказа с ID: {}", om.getId());
+		if (om.getId() == null || !repo.existsById(om.getId())) {
+			LOG.warn("Метод заказа не существует: ID={}", om.getId());
+			throw new OrderMethodNotFound("Метод заказа не существует");
+		}
+		repo.save(om);
 	}
 
-
+	/**
+	 * Удаляет метод заказа по ID.
+	 *
+	 * @param id идентификатор метода
+	 * @throws OrderMethodNotFound если метод не найден
+	 */
+	@Override
 	public void deleteOrderMethod(Integer id) {
-		repo.delete(getOneOrderMethod(id));
+		LOG.info("Удаление метода заказа ID: {}", id);
+		repo.delete(getOneOrderMethod(id)); // выбросит исключение, если не найден
 	}
 
-
+	/**
+	 * Получает метод заказа по ID.
+	 *
+	 * @param id идентификатор
+	 * @return объект OrderMethod
+	 * @throws OrderMethodNotFound если не найден
+	 */
+	@Override
 	public OrderMethod getOneOrderMethod(Integer id) {
-		return repo.findById(id).orElseThrow(
-				()->new OrderMethodNotFound("Order Method Not Exist")
-				);
+		LOG.info("Поиск метода заказа ID: {}", id);
+		return repo.findById(id)
+				.orElseThrow(() -> new OrderMethodNotFound("Метод заказа не существует"));
 	}
 
-
+	/**
+	 * Возвращает все методы заказа.
+	 *
+	 * @return список OrderMethod
+	 */
+	@Override
 	public List<OrderMethod> getAllOrderMethods() {
+		LOG.info("Получение всех методов заказа");
 		return repo.findAll();
 	}
 
-
+	/**
+	 * Проверяет существование метода по коду (для создания).
+	 *
+	 * @param code код метода
+	 * @return true, если существует
+	 */
+	@Override
 	public boolean isOrderMethodCodeExist(String code) {
+		LOG.debug("Проверка существования метода заказа по коду: {}", code);
 		return repo.isOrderMethodCodeExist(code) > 0;
 	}
 
-
+	/**
+	 * Проверяет существование метода по коду (для обновления).
+	 *
+	 * @param code код метода
+	 * @param id   ID текущего метода
+	 * @return true, если существует другой метод с таким кодом
+	 */
+	@Override
 	public boolean isOrderMethodCodeExistForEdit(String code, Integer id) {
-		return repo.isOrderMethodCodeExistForEdit(code,id) > 0;
+		LOG.debug("Проверка кода на уникальность при редактировании. Код: {}, ID: {}", code, id);
+		return repo.isOrderMethodCodeExistForEdit(code, id) > 0;
 	}
-	
+
+	/**
+	 * Возвращает агрегированные данные: режим метода заказа и количество.
+	 *
+	 * @return список массивов [mode, count]
+	 */
+	@Override
 	public List<Object[]> getOrderMethodModeAndCount() {
+		LOG.info("Получение статистики: режим метода и количество");
 		return repo.getOrderMethodModeAndCount();
 	}
-	
+
+	/**
+	 * Возвращает Map с ID и кодами методов заказа.
+	 * Используется, например, для выпадающих списков на UI.
+	 *
+	 * @return Map<ID, Code>
+	 */
+	@Override
 	public Map<Integer, String> getOrderMethodIdAndCode() {
+		LOG.info("Формирование карты ID и кодов методов заказа");
 		List<Object[]> list = repo.getOrderMethodIdAndCode();
 		return myAppUtil.convertListToMap(list);
 	}
-
 }
-
-/*
-Класс OrderMethodServiceImpl реализует интерфейс IOrderMethodService, обеспечивая логику для работы с методами заказа (OrderMethod) в приложении. Этот сервисный слой взаимодействует с репозиторием OrderMethodRepository для выполнения операций CRUD и предоставляет дополнительную бизнес-логику, такую как проверка существования кода метода заказа. Давайте разберем ключевые моменты реализации и возможные улучшения:
-
-Внедрение зависимостей
-OrderMethodRepository: Внедрение зависимости через аннотацию @Autowired позволяет сервису взаимодействовать с базой данных для выполнения операций над объектами OrderMethod.
-Методы сервиса
-CRUD операции: Реализованы стандартные операции создания, чтения, обновления и удаления методов заказа.
-
-Проверка существования кода метода заказа: Реализованы методы isOrderMethodCodeExist и isOrderMethodCodeExistForEdit для проверки уникальности кода метода заказа, что важно для предотвращения дублирования данных.
-
-Агрегация данных: Метод getOrderMethodModeAndCount собирает данные для отчетов и аналитики, возвращая количество методов заказа по каждому режиму.
-
-Преобразование данных для UI: Метод getOrderMethodIdAndCode возвращает данные в формате, удобном для отображения в пользовательском интерфейсе, используя вспомогательный метод MyAppUtil.convertListToMap.
-
-Потенциальные улучшения
-Обработка исключений: Хорошей практикой является создание иерархии исключений приложения и использование более специфичных исключений вместо RuntimeException. Это упрощает обработку ошибок и предоставление более информативных ответов пользователю.
-
-Валидация данных: Добавление слоя валидации для проверки входных данных перед выполнением операций с базой данных может предотвратить возникновение ошибок и улучшить качество данных.
-
-Транзакционность: Убедитесь, что операции, изменяющие состояние данных и потенциально влияющие на целостность данных, выполняются в контексте транзакции.
-
-Логирование: Включение детализированного логирования операций может облегчить отладку и мониторинг приложения. Рекомендуется использовать разные уровни логирования (DEBUG, INFO, ERROR) для различных сценариев.
-
-Использование DTO: Рассмотрите возможность использования объектов передачи данных (DTO) для обработки запросов и ответов API, чтобы отделить внешний контракт API от внутренней модели данных.
-
-OrderMethodServiceImpl является важным компонентом в архитектуре приложения, обеспечивая бизнес-логику управления методами заказа. Применение предложенных улучшений может сделать сервис более надежным, безопасным и удобным для дальнейшей разработки и поддержки.
-*/
