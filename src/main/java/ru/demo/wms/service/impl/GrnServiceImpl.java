@@ -8,18 +8,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ru.demo.wms.exception.DataNotFoundException;
 import ru.demo.wms.model.Grn;
-import ru.demo.wms.repo.GrnDtlReposiory;
-import ru.demo.wms.repo.GrnReposiory;
+import ru.demo.wms.repo.GrnDtlRepository;
+import ru.demo.wms.repo.GrnRepository;
 import ru.demo.wms.service.IGrnService;
 
 @Service
 public class GrnServiceImpl implements IGrnService {
 
 	@Autowired
-	private GrnReposiory repo;
+	private GrnRepository repo;
 	
 	@Autowired
-	private GrnDtlReposiory dtlRepo;
+	private GrnDtlRepository dtlRepo;
 	
 	public Integer saveGrn(Grn grn) {
 		return repo.save(grn).getId();
