@@ -1,6 +1,7 @@
 package ru.demo.wms.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import org.jfree.chart.ChartFactory;
@@ -8,86 +9,98 @@ import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+/**
+ * Утилитный класс для генерации диаграмм (круговых и столбчатых)
+ * по типам пользователей склада (Warehouse User Types).
+ * Использует библиотеку JFreeChart.
+ */
 @Component
 public class WhUserTypeUtil {
 
+	private static final Logger log = LoggerFactory.getLogger(WhUserTypeUtil.class);
 
-	public void generatePieChart(String path,List<Object[]> data) {
+	/**
+	 * Генерирует круговую диаграмму (Pie Chart) по типам пользователей склада.
+	 *
+	 * @param path путь к директории, где будет сохранено изображение
+	 * @param data список массивов Object[], где:
+	 *             - ob[0] — название категории (тип пользователя)
+	 *             - ob[1] — числовое значение (количество)
+	 */
+	public void generatePieChart(String path, List<Object[]> data) {
+		log.info("Генерация круговой диаграммы типов пользователей склада");
 
-
-
-		DefaultPieDataset dataset=new DefaultPieDataset();
-		for(Object[] ob:data) {
-			// key(String)-- val(Double)
-			dataset.setValue(ob[0].toString(),
-					Double.valueOf(ob[1].toString()));
+		if (data == null || data.isEmpty()) {
+			log.warn("Данные для круговой диаграммы отсутствуют");
+			return;
 		}
 
+		DefaultPieDataset dataset = new DefaultPieDataset();
+		for (Object[] ob : data) {
+			dataset.setValue(ob[0].toString(), Double.valueOf(ob[1].toString()));
+		}
 
-		JFreeChart chart=ChartFactory.createPieChart(" WH USER TYPE", dataset);
-
-
+		JFreeChart chart = ChartFactory.createPieChart("WH USER TYPE", dataset);
 
 		try {
 			ChartUtils.saveChartAsJPEG(
-					new File(path+"/UserIDTypeA.jpg"),
-					chart, // Jfree object
-					300,// width
-					300); // object
-		} catch (Exception e) {
-			e.printStackTrace();
+					new File(path + "/UserIDTypeA.jpg"),
+					chart,
+					300, // ширина
+					300  // высота
+			);
+			log.info("Круговая диаграмма успешно сохранена: {}/UserIDTypeA.jpg", path);
+		} catch (IOException e) {
+			log.error("Ошибка при сохранении круговой диаграммы", e);
 		}
 	}
-	public void generateBarChart(String path,List<Object[]> data) {
 
+	/**
+	 * Генерирует столбчатую диаграмму (Bar Chart) по типам пользователей склада.
+	 *
+	 * @param path путь к директории, где будет сохранено изображение
+	 * @param data список массивов Object[], где:
+	 *             - ob[0] — название категории (тип пользователя)
+	 *             - ob[1] — числовое значение (количество)
+	 */
+	public void generateBarChart(String path, List<Object[]> data) {
+		log.info("Генерация столбчатой диаграммы типов пользователей склада");
 
+		if (data == null || data.isEmpty()) {
+			log.warn("Данные для столбчатой диаграммы отсутствуют");
+			return;
+		}
 
 		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-		for(Object[] ob:data) {
-			// key(String)-- val(Double)
+		for (Object[] ob : data) {
 			dataset.setValue(
 					Double.valueOf(ob[1].toString()),
 					ob[0].toString(),
-					"" // display lable
-					);
+					"" // метка для оси X (может быть пустой)
+			);
 		}
 
-
-		//Input => title, x-axis label, y-axis-label, dataset
-		JFreeChart chart=ChartFactory.createBarChart(" WH USER TYPE", "USER ID TYPE", "COUNTS", dataset);
+		JFreeChart chart = ChartFactory.createBarChart(
+				"WH USER TYPE",        // Заголовок диаграммы
+				"USER ID TYPE",        // Подпись оси X
+				"COUNTS",              // Подпись оси Y
+				dataset                // Набор данных
+		);
 
 		try {
 			ChartUtils.saveChartAsJPEG(
-					new File(path+"/UserIDTypeB.jpg"),
-					chart, // Jfree object
-					450,// width
-					450); // object
-		} catch (Exception e) {
-			e.printStackTrace();
+					new File(path + "/UserIDTypeB.jpg"),
+					chart,
+					450, // ширина
+					450  // высота
+			);
+			log.info("Столбчатая диаграмма успешно сохранена: {}/UserIDTypeB.jpg", path);
+		} catch (IOException e) {
+			log.error("Ошибка при сохранении столбчатой диаграммы", e);
 		}
 	}
 }
-/*
-Класс WhUserTypeUtil предназначен для генерации визуальных отчетов по типам пользователей склада (Warehouse User Types) с использованием библиотеки JFreeChart. Он предоставляет два метода для создания круговых (generatePieChart) и столбчатых (generateBarChart) диаграмм, основанных на предоставленных данных. Эти визуализации могут помочь в анализе распределения пользователей по типам, поддерживая управленческие и аналитические процессы. Вот детальное рассмотрение функциональности каждого метода:
-
-Методы класса WhUserTypeUtil:
-generatePieChart(String path, List<Object[]> data):
-Создает круговую диаграмму, которая иллюстрирует долю каждого типа пользователя склада в общем количестве. Для каждого элемента списка data, содержащего пары ключ-значение (тип пользователя и их количество), формируется сектор диаграммы. Результат сохраняется в виде JPEG-изображения по указанному пути.
-
-generateBarChart(String path, List<Object[]> data):
-Генерирует столбчатую диаграмму, на которой каждый тип пользователя представлен отдельным столбцом, высота которого соответствует количеству пользователей данного типа. Данные для столбцов берутся из списка data. Готовая диаграмма также сохраняется в виде JPEG-файла.
-
-Реализация:
-Оба метода начинаются с подготовки источника данных (DefaultPieDataset для круговой диаграммы и DefaultCategoryDataset для столбчатой), куда вносится информация из списка data. Затем, используя ChartFactory, создается объект диаграммы (JFreeChart), который конфигурируется в соответствии с выбранным типом диаграммы и подготовленными данными. Наконец, диаграмма сохраняется как изображение в файл.
-
-Применение:
-Класс WhUserTypeUtil может быть использован в приложениях для управления складом или логистикой, где требуется аналитика по типам пользователей для оптимизации рабочих процессов, планирования ресурсов или в целях отчетности.
-
-Рекомендации:
-Проверка доступности пути: Перед сохранением изображения убедитесь, что указанный путь доступен и имеет права на запись.
-Обработка исключений: В реализации следует предусмотреть корректную обработку возможных ошибок, связанных с созданием и сохранением изображений, включая обработку исключений IOException.
-Настройка визуализации: JFreeChart предоставляет множество опций для настройки внешнего вида диаграмм, включая цвета, стили текста и легенды. Рассмотрите возможность дополнительной конфигурации диаграмм для повышения их информативности и привлекательности.
-Этот утилитный класс является отличным примером того, как программные средства визуализации данных могут быть интегрированы в Java-приложения, повышая их аналитическую ценность и пользовательскую привлекательность.
-*/

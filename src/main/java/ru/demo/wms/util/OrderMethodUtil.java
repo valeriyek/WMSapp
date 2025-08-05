@@ -11,80 +11,76 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 import org.springframework.stereotype.Component;
 
+/**
+ * Утилитный класс для генерации графиков (диаграмм) по методам заказа.
+ * Использует библиотеку JFreeChart для визуализации аналитических данных.
+ * Поддерживает генерацию круговых и столбчатых диаграмм.
+ */
 @Component
 public class OrderMethodUtil {
 
+	/**
+	 * Генерирует круговую диаграмму (Pie Chart) на основе предоставленного списка данных.
+	 * Сохраняет диаграмму в виде изображения JPEG по указанному пути.
+	 *
+	 * @param path путь к директории, где будет сохранено изображение (без расширения)
+	 * @param list список объектных массивов, где:
+	 *             - ob[0] — название сектора (String)
+	 *             - ob[1] — числовое значение (Number)
+	 */
 	public void generatePie(String path, List<Object[]> list) {
-
 		DefaultPieDataset dataset = new DefaultPieDataset();
-		for(Object[] ob : list) {
-
+		for (Object[] ob : list) {
 			dataset.setValue(ob[0].toString(), Double.valueOf(ob[1].toString()));
 		}
-
 
 		JFreeChart chart = ChartFactory.createPieChart("ORDER METHOD MODE", dataset);
 
 		try {
 			ChartUtils.saveChartAsJPEG(
-					new File(path+"/omA.jpg"), 
-					chart, 300, 300);
+					new File(path + "/omA.jpg"),
+					chart,
+					300, 300
+			);
 		} catch (IOException e) {
-			e.printStackTrace();
+			e.printStackTrace(); // В боевом коде — заменить на логирование
 		}
 	}
 
+	/**
+	 * Генерирует столбчатую диаграмму (Bar Chart) на основе предоставленного списка данных.
+	 * Сохраняет диаграмму в виде изображения JPEG по указанному пути.
+	 *
+	 * @param path путь к директории, где будет сохранено изображение (без расширения)
+	 * @param list список объектных массивов, где:
+	 *             - ob[0] — категория/метка столбца (String)
+	 *             - ob[1] — значение (Number)
+	 */
 	public void generateBar(String path, List<Object[]> list) {
-
 		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-		for(Object[] ob:list) {
-
+		for (Object[] ob : list) {
 			dataset.setValue(
 					Double.valueOf(ob[1].toString()),
 					ob[0].toString(),
-					"");
+					"" // Пустая категория (по оси X)
+			);
 		}
 
-
-		JFreeChart chart = ChartFactory.createBarChart("ORDER METHOD MODE", "MODE", "COUNT", dataset);
+		JFreeChart chart = ChartFactory.createBarChart(
+				"ORDER METHOD MODE",  // Заголовок диаграммы
+				"MODE",               // Ось X
+				"COUNT",              // Ось Y
+				dataset
+		);
 
 		try {
 			ChartUtils.saveChartAsJPEG(
-					new File(path+"/omB.jpg"), 
-					chart, 300, 300);
+					new File(path + "/omB.jpg"),
+					chart,
+					300, 300
+			);
 		} catch (IOException e) {
-			e.printStackTrace();
+			e.printStackTrace(); // В боевом коде — заменить на логирование
 		}
-
 	}
-
 }
-/*
-Класс OrderMethodUtil предоставляет функциональность для генерации графических отчетов (в виде диаграмм) по методам заказа, используя библиотеку JFreeChart. Этот класс включает два метода для создания круговых (generatePie) и столбчатых (generateBar) диаграмм на основе предоставленных данных. Давайте подробнее рассмотрим каждый из методов:
-
-Методы OrderMethodUtil:
-generatePie(String path, List<Object[]> list):
-Генерирует круговую диаграмму на основе списка данных. Каждый элемент списка list представляет собой массив, содержащий название сектора диаграммы и числовое значение. Диаграмма сохраняется в виде JPEG-файла по указанному пути path.
-
-generateBar(String path, List<Object[]> list):
-Создает столбчатую диаграмму, используя предоставленный список данных. Аналогично, каждый элемент списка list содержит название группы и связанное с ней числовое значение, представляющее высоту столбца на диаграмме. Результат также сохраняется в виде JPEG-файла.
-
-Принцип работы:
-Создание набора данных (Dataset):
-Для обоих методов первым шагом является создание набора данных из предоставленного списка. В generatePie используется DefaultPieDataset для круговой диаграммы, а в generateBar — DefaultCategoryDataset для столбчатой.
-
-Создание диаграммы (JFreeChart):
-С помощью ChartFactory создается объект JFreeChart, который настраивается на основе созданного набора данных. Для круговой диаграммы используется метод createPieChart, а для столбчатой — createBarChart.
-
-Сохранение диаграммы в файл:
-С использованием ChartUtils.saveChartAsJPEG генерированная диаграмма сохраняется в виде изображения по указанному пути.
-
-Применение:
-Эти методы могут быть использованы для визуализации аналитических данных, например, для отображения распределения заказов по различным методам обработки или для подготовки отчетов, которые требуется представить в графическом виде.
-
-Рекомендации по использованию:
-Убедитесь, что указанный путь для сохранения файлов доступен и имеет достаточно прав на запись.
-Обработайте возможные исключения, связанные с операциями ввода/вывода, чтобы предотвратить сбои приложения при невозможности сохранения изображений.
-При необходимости адаптируйте размеры и другие параметры визуализации диаграмм в соответствии с требованиями к отображению или печати.
-Класс OrderMethodUtil представляет собой полезный инструмент для добавления визуального измерения к анализу данных в приложениях, связанных с управлением запасами или логистикой.
-*/
