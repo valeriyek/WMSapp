@@ -3,94 +3,129 @@ package ru.demo.wms.service;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import ru.demo.wms.model.PurchaseDtl;
 import ru.demo.wms.model.PurchaseOrder;
 
+/**
+ * Сервисный интерфейс для управления заказами на покупку (PurchaseOrder)
+ * и их деталями (PurchaseDtl) в системе WMS.
+ *
+ * Обеспечивает полный цикл работы с заказами: создание, валидация,
+ * управление статусами, получение агрегированных данных.
+ */
 public interface IPurchaseOrderService {
 
+	/**
+	 * Сохраняет новый заказ на покупку.
+	 *
+	 * @param po объект заказа на покупку.
+	 * @return ID сохраненного заказа.
+	 */
 	Integer savePurchaseOrder(PurchaseOrder po);
-	
+
+	/**
+	 * Получает заказ по ID.
+	 *
+	 * @param id идентификатор заказа.
+	 * @return объект PurchaseOrder.
+	 */
 	PurchaseOrder getOnePurchaseOrder(Integer id);
+
+	/**
+	 * Возвращает список всех заказов на покупку.
+	 *
+	 * @return список заказов.
+	 */
 	List<PurchaseOrder> getAllPurchaseOrders();
+
+	/**
+	 * Проверяет, существует ли заказ с данным кодом.
+	 *
+	 * @param code код заказа.
+	 * @return true, если существует.
+	 */
 	boolean isPurchaseOrderCodeExist(String code);
-	boolean isPurchaseOrderCodeExistForEdit(String code,Integer id);
 
+	/**
+	 * Проверяет наличие кода заказа с исключением по ID (для редактирования).
+	 *
+	 * @param code код заказа.
+	 * @param id ID исключаемого заказа.
+	 * @return true, если такой код уже есть.
+	 */
+	boolean isPurchaseOrderCodeExistForEdit(String code, Integer id);
+
+	/**
+	 * Сохраняет деталь к заказу на покупку.
+	 *
+	 * @param pdtl объект детали.
+	 * @return ID сохранённой детали.
+	 */
 	Integer savePurchaseDtl(PurchaseDtl pdtl);
-	List<PurchaseDtl> getPurchaseDtlsByPoId(Integer id);	
-	void deletePurchaseDtl(Integer dtlId);
-	
 
+	/**
+	 * Возвращает список деталей по ID заказа.
+	 *
+	 * @param id ID заказа на покупку.
+	 * @return список деталей.
+	 */
+	List<PurchaseDtl> getPurchaseDtlsByPoId(Integer id);
+
+	/**
+	 * Удаляет деталь по её ID.
+	 *
+	 * @param dtlId ID детали.
+	 */
+	void deletePurchaseDtl(Integer dtlId);
+
+	/**
+	 * Получает текущий статус заказа.
+	 *
+	 * @param poId ID заказа.
+	 * @return строковое значение статуса.
+	 */
 	String getCurrentStatusOfPo(Integer poId);
-	void updatePoStatus(Integer poId,String newStatus);
-	
+
+	/**
+	 * Обновляет статус заказа.
+	 *
+	 * @param poId ID заказа.
+	 * @param newStatus новый статус.
+	 */
+	void updatePoStatus(Integer poId, String newStatus);
+
+	/**
+	 * Возвращает количество деталей для указанного заказа.
+	 *
+	 * @param poId ID заказа.
+	 * @return количество деталей.
+	 */
 	Integer getPurchaseDtlsCountByPoId(Integer poId);
 
+	/**
+	 * Получает деталь заказа по ID товара и ID заказа.
+	 *
+	 * @param partId ID компонента.
+	 * @param poId ID заказа.
+	 * @return Optional с найденной деталью или пустой.
+	 */
 	Optional<PurchaseDtl> getPurchaseDtlByPartIdAndPoId(Integer partId, Integer poId);
-	Integer updatePurchaseDtlQtyByDtlId(Integer newQty,Integer dtlId);
 
-	Map<Integer,String> getPoIdAndCodesByStatus(String status);
+	/**
+	 * Обновляет количество в детали заказа.
+	 *
+	 * @param newQty новое количество.
+	 * @param dtlId ID детали.
+	 * @return количество обновлённых записей (обычно 1).
+	 */
+	Integer updatePurchaseDtlQtyByDtlId(Integer newQty, Integer dtlId);
+
+	/**
+	 * Возвращает карту ID и кодов заказов по статусу.
+	 * Удобно для фильтрации или выпадающих списков.
+	 *
+	 * @param status статус заказа.
+	 * @return Map ID → Код заказа.
+	 */
+	Map<Integer, String> getPoIdAndCodesByStatus(String status);
 }
-/*
-Интерфейс IPurchaseOrderService определяет сервисный слой для управления заказами на покупку (PurchaseOrder) и связанными с ними деталями (PurchaseDtl) в системе управления складом или логистикой. Вот обзор ключевых функций, которые предоставляет этот интерфейс:
-
-Основные функции:
-Сохранение заказа на покупку:
-
-Integer savePurchaseOrder(PurchaseOrder po);
-Сохраняет новый заказ на покупку в системе и возвращает идентификатор сохраненного заказа.
-Получение информации о заказе на покупку:
-
-PurchaseOrder getOnePurchaseOrder(Integer id);
-Возвращает информацию о конкретном заказе на покупку по его идентификатору.
-
-List<PurchaseOrder> getAllPurchaseOrders();
-Возвращает список всех заказов на покупку в системе.
-
-Проверка существования кода заказа:
-
-boolean isPurchaseOrderCodeExist(String code);
-Проверяет, существует ли уже заказ на покупку с указанным кодом.
-
-boolean isPurchaseOrderCodeExistForEdit(String code, Integer id);
-Проверяет существование кода заказа на покупку за исключением указанного идентификатора заказа, что полезно при редактировании заказа.
-
-Работа с деталями заказа на покупку (screen#2):
-Сохранение деталей заказа:
-
-Integer savePurchaseDtl(PurchaseDtl pdtl);
-Сохраняет детали заказа на покупку.
-Получение и удаление деталей заказа:
-
-List<PurchaseDtl> getPurchaseDtlsByPoId(Integer id);
-Возвращает список всех деталей для указанного заказа на покупку.
-
-void deletePurchaseDtl(Integer dtlId);
-Удаляет конкретную деталь заказа на покупку.
-
-Управление статусом заказа:
-Чтение и обновление статуса заказа:
-
-String getCurrentStatusOfPo(Integer poId);
-Возвращает текущий статус указанного заказа на покупку.
-
-void updatePoStatus(Integer poId, String newStatus);
-Обновляет статус указанного заказа на покупку.
-
-Дополнительные функции:
-
-Integer getPurchaseDtlsCountByPoId(Integer poId);
-Возвращает количество деталей для указанного заказа на покупку.
-
-Optional<PurchaseDtl> getPurchaseDtlByPartIdAndPoId(Integer partId, Integer poId);
-Проверяет, добавлена ли уже деталь для указанного заказа на покупку и возвращает её, если да.
-
-Integer updatePurchaseDtlQtyByDtlId(Integer newQty, Integer dtlId);
-Обновляет количество определенной детали в заказе на покупку.
-
-Интеграция с GRN:
-
-Map<Integer, String> getPoIdAndCodesByStatus(String status);
-Возвращает карту идентификаторов и кодов заказов на покупку по заданному статусу, что может быть использовано для интеграции с другими модулями, такими как модуль приемки товаров (Goods Received Note - GRN).
-Этот интерфейс важен для обеспечения гибкости и масштабируемости системы управления складом или логистикой, позволяя адаптировать процессы заказа товаров под различные бизнес-требования.
-*/

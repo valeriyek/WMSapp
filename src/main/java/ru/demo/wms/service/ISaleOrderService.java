@@ -7,77 +7,123 @@ import java.util.Optional;
 import ru.demo.wms.model.SaleOrder;
 import ru.demo.wms.model.SaleOrderDetails;
 
+/**
+ * Интерфейс ISaleOrderService описывает контракт сервисного слоя
+ * для управления заказами на продажу и их деталями в системе WMS.
+ */
 public interface ISaleOrderService {
 
+	/**
+	 * Сохраняет новый заказ на продажу и возвращает его ID.
+	 *
+	 * @param saleOrder объект заказа на продажу
+	 * @return идентификатор созданного заказа
+	 */
+	Integer saveSaleOrder(SaleOrder saleOrder);
 
-	public Integer saveSaleOrder(SaleOrder saleOrder);
+	/**
+	 * Возвращает список всех заказов на продажу.
+	 *
+	 * @return список заказов
+	 */
+	List<SaleOrder> getAllSaleOrder();
 
+	/**
+	 * Возвращает заказ на продажу по ID.
+	 *
+	 * @param id идентификатор заказа
+	 * @return объект SaleOrder
+	 */
+	SaleOrder getOneSaleOrder(Integer id);
 
-	public List<SaleOrder> getAllSaleOrder();
+	/**
+	 * Проверяет уникальность кода заказа.
+	 *
+	 * @param code код заказа
+	 * @return true, если код уже существует
+	 */
+	boolean validateOrderCode(String code);
 
+	/**
+	 * Проверяет уникальность кода заказа при редактировании.
+	 *
+	 * @param code код заказа
+	 * @param id идентификатор редактируемого заказа
+	 * @return true, если код уже используется другим заказом
+	 */
+	boolean validateOrderCodeAndId(String code, Integer id);
 
-	public SaleOrder getOneSaleOrder(Integer id);
+	/**
+	 * Сохраняет деталь к заказу на продажу и возвращает её ID.
+	 *
+	 * @param saleOrderDetails объект детали заказа
+	 * @return идентификатор созданной детали
+	 */
+	Integer savePurchaseDetails(SaleOrderDetails saleOrderDetails);
 
+	/**
+	 * Возвращает все детали для указанного заказа на продажу.
+	 *
+	 * @param id идентификатор заказа
+	 * @return список деталей заказа
+	 */
+	List<SaleOrderDetails> getSaleDtlsBySaleOrderId(Integer id);
 
-	public boolean validateOrderCode(String code);
+	/**
+	 * Удаляет одну деталь заказа по ID.
+	 *
+	 * @param detailId идентификатор детали
+	 */
+	void deleteSaleDetails(Integer detailId);
 
-	public boolean validateOrderCodeAndId(String code, Integer id);
+	/**
+	 * Получает текущий статус заказа на продажу.
+	 *
+	 * @param soId идентификатор заказа
+	 * @return строковое представление статуса
+	 */
+	String getCurrentStatusOfSaleOrder(Integer soId);
 
+	/**
+	 * Обновляет статус указанного заказа на продажу.
+	 *
+	 * @param soId идентификатор заказа
+	 * @param newStatus новый статус
+	 */
+	void updateSaleOrderStatus(Integer soId, String newStatus);
 
-	public Integer savePurchaseDetails(SaleOrderDetails saleOrderDetails);
+	/**
+	 * Возвращает количество деталей для конкретного заказа на продажу.
+	 *
+	 * @param soId идентификатор заказа
+	 * @return количество деталей
+	 */
+	Integer getSaleDtlsCountBySaleOrderId(Integer soId);
 
+	/**
+	 * Получает деталь заказа по ID детали и ID заказа.
+	 *
+	 * @param partId идентификатор товара (детали)
+	 * @param soId идентификатор заказа
+	 * @return найденная деталь (если есть)
+	 */
+	Optional<SaleOrderDetails> getSaleDetailByPartIdAndSaleOrderId(Integer partId, Integer soId);
 
-	public List<SaleOrderDetails> getSaleDtlsBySaleOrderId(Integer id);
+	/**
+	 * Обновляет количество конкретной детали заказа по её ID.
+	 *
+	 * @param newQty новое количество
+	 * @param dtlId идентификатор детали
+	 * @return количество обновленных записей (1 или 0)
+	 */
+	Integer updateSaleOrderDetailQtyByDetailId(Integer newQty, Integer dtlId);
 
-	public void deleteSaleDetails(Integer detailId);
-
-
-	public String getCurrentStatusOfSaleOrder(Integer soId);
-
-	public void updateSaleOrderStatus(Integer soId, String newStatus);
-
-	public Integer getSaleDtlsCountBySaleOrderId(Integer soId);
-
-
-	public Optional<SaleOrderDetails> getSaleDetailByPartIdAndSaleOrderId(Integer partId, Integer soId);
-
-	public Integer updateSaleOrderDetailQtyByDetailId(Integer newQty, Integer dtlId);
-
-
+	/**
+	 * Возвращает карту заказов на продажу по определенному статусу.
+	 * Используется, например, для формирования выпадающих списков.
+	 *
+	 * @param status статус заказа
+	 * @return карта [ID заказа → код заказа]
+	 */
 	Map<Integer, String> findSaleOrderIdAndCodeByStatus(String status);
 }
-/*
-Интерфейс ISaleOrderService представляет собой ключевую часть системы управления заказами на продажу, предлагая ряд методов для создания, обновления, удаления и запроса информации о заказах на продажу (SaleOrder) и связанных с ними деталях заказа (SaleOrderDetails). Вот детальный обзор предоставляемых методов:
-
-Основные методы для управления заказами на продажу:
-saveSaleOrder(SaleOrder saleOrder): Сохраняет новый заказ на продажу или обновляет существующий в системе, возвращая идентификатор сохраненного заказа.
-
-getAllSaleOrder(): Возвращает список всех заказов на продажу в системе.
-
-getOneSaleOrder(Integer id): Возвращает информацию о конкретном заказе на продажу по его идентификатору.
-
-validateOrderCode(String code) и validateOrderCodeAndId(String code, Integer id): Проверяют уникальность кода заказа при создании нового заказа или обновлении существующего, чтобы избежать дублирования кодов.
-
-Управление деталями заказа на продажу:
-savePurchaseDetails(SaleOrderDetails saleOrderDetails): Сохраняет детали для заказа на продажу, такие как информация о продукте, количество и стоимость.
-
-getSaleDtlsBySaleOrderId(Integer id): Возвращает список всех деталей, связанных с конкретным заказом на продажу.
-
-deleteSaleDetails(Integer detailId): Удаляет определенную деталь из заказа на продажу.
-
-Управление статусом заказа:
-getCurrentStatusOfSaleOrder(Integer soId): Получает текущий статус заказа на продажу.
-
-updateSaleOrderStatus(Integer soId, String newStatus): Обновляет статус заказа на продажу, что может включать изменение на "обработан", "отгружен" и т.д.
-
-Дополнительные функции:
-getSaleDtlsCountBySaleOrderId(Integer soId): Возвращает количество деталей заказа для конкретного заказа на продажу.
-
-getSaleDetailByPartIdAndSaleOrderId(Integer partId, Integer soId): Проверяет, была ли определенная деталь уже добавлена в заказ на продажу, и возвращает ее, если да.
-
-updateSaleOrderDetailQtyByDetailId(Integer newQty, Integer dtlId): Обновляет количество конкретной детали в заказе на продажу.
-
-findSaleOrderIdAndCodeByStatus(String status): Позволяет интегрировать информацию о заказах на продажу с другими системами, предоставляя карту идентификаторов и кодов заказов по определенному статусу.
-
-Реализация ISaleOrderService играет важную роль в обеспечении функциональности системы управления заказами на продажу, позволяя эффективно управлять заказами и обеспечивать высокий уровень обслуживания клиентов.
-*/

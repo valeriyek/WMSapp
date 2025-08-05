@@ -5,25 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b7333457-b5e6-493f-82fc-60b81c498e0e" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/GrnDtlRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/DocumentRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/DocumentRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/GrnDtlReposiory.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/GrnReposiory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/GrnRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/OrderMethodRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/OrderMethodRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/PartRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/PartRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/PurchaseDtlRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/PurchaseDtlRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/PurchaseOrderRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/PurchaseOrderRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/RoleRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/RoleRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/SaleOrderDetailsRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/SaleOrderDetailsRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/SaleOrderRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/SaleOrderRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/ShipingDetailRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/ShipingDetailRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/ShipingRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/ShipingRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/ShipmentTypeRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/ShipmentTypeRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/UomRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/UomRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/UserInfoRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/UserInfoRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/WhUserTypeRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/repo/WhUserTypeRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/impl/GrnServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/impl/GrnServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/IDocumentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/IDocumentService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/IGrnService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/IGrnService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/IOrderMethodService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/IOrderMethodService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/IPartService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/IPartService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/IPurchaseOrderService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/IPurchaseOrderService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/IRoleService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/IRoleService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/ISaleOrderService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/ISaleOrderService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/IShipingService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/IShipingService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/IShipmentTypeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/IShipmentTypeService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/IUomService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/service/IUomService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -102,5 +94,16 @@
       <updated>1753368458911</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

@@ -5,71 +5,113 @@ import java.util.Map;
 
 import ru.demo.wms.model.WhUserType;
 
-public interface IWhUserTypeService {  
+/**
+ * Сервисный интерфейс для управления типами пользователей склада (WhUserType).
+ * Предоставляет методы для CRUD-операций, валидации уникальности, агрегации и интеграции.
+ */
+public interface IWhUserTypeService {
 
+	/**
+	 * Сохраняет нового пользователя склада.
+	 *
+	 * @param whut объект WhUserType
+	 * @return ID сохранённой записи
+	 */
 	Integer saveWhUserType(WhUserType whut);
+
+	/**
+	 * Возвращает все записи типов пользователей склада.
+	 *
+	 * @return список WhUserType
+	 */
 	List<WhUserType> getAllWhUserTypes();
+
+	/**
+	 * Удаляет пользователя склада по ID.
+	 *
+	 * @param id идентификатор записи
+	 */
 	void deleteWhUserType(Integer id);
+
+	/**
+	 * Возвращает одного пользователя склада по ID.
+	 *
+	 * @param id идентификатор записи
+	 * @return объект WhUserType
+	 */
 	WhUserType getOneWhUserType(Integer id);
+
+	/**
+	 * Обновляет существующую запись типа пользователя склада.
+	 *
+	 * @param whut обновлённый объект WhUserType
+	 */
 	void updateWhUserType(WhUserType whut);
 
+	/**
+	 * Проверяет, существует ли запись с таким кодом.
+	 *
+	 * @param code проверяемый код
+	 * @return true, если код уже используется
+	 */
 	boolean isWhUserTypeCodeExit(String code);
-	boolean isWhUserTypeCodeExitForEdit(String code,Integer id); 
 
+	/**
+	 * Проверяет, существует ли запись с таким кодом, исключая текущий ID (для редактирования).
+	 *
+	 * @param code код для проверки
+	 * @param id исключаемый ID
+	 * @return true, если дублирование найдено
+	 */
+	boolean isWhUserTypeCodeExitForEdit(String code, Integer id);
+
+	/**
+	 * Проверяет, существует ли пользователь с указанным email.
+	 *
+	 * @param email адрес email
+	 * @return true, если найдено совпадение
+	 */
 	boolean getWhUserTypeuserEmailCount(String email);
+
+	/**
+	 * Проверяет email при редактировании (исключает текущий ID).
+	 *
+	 * @param email проверяемый email
+	 * @param id исключаемый ID
+	 * @return true, если найден дубликат
+	 */
 	boolean getWhUserTypeuserEmailCountForEdit(String email, Integer id);
 
-	boolean getWhUserTypeuserIdNumCount(String idnum);	
+	/**
+	 * Проверяет, существует ли пользователь с указанным ID-номером.
+	 *
+	 * @param idnum идентификационный номер
+	 * @return true, если найден дубликат
+	 */
+	boolean getWhUserTypeuserIdNumCount(String idnum);
+
+	/**
+	 * Проверяет ID-номер при редактировании (исключает текущий ID).
+	 *
+	 * @param idnum проверяемый номер
+	 * @param id исключаемый ID
+	 * @return true, если найден дубликат
+	 */
 	boolean getWhUserTypeuserIdNumCountForEdit(String idnum, Integer id);
 
+	/**
+	 * Возвращает статистику количества пользователей по их типу (например, ADMIN, VENDOR).
+	 *
+	 * @return список массивов [тип, количество]
+	 */
 	List<Object[]> getWhUserTypUserIDAndCount();
 
-	//for integration
-	Map<Integer,String> getWhUserIdAndCodeByType(String type);
-	
+	/**
+	 * Возвращает карту [ID пользователя → Код] для заданного типа (например, "VENDOR").
+	 * Используется для интеграции с другими модулями.
+	 *
+	 * @param type тип пользователя склада
+	 * @return Map ID → Код
+	 */
+	Map<Integer, String> getWhUserIdAndCodeByType(String type);
 }
-/*
-Интерфейс IWhUserTypeService определяет сервисный слой для управления типами пользователей склада (WhUserType) в системе управления запасами или логистикой. Этот интерфейс предлагает комплексный набор методов для создания, обновления, удаления и получения информации о типах пользователей склада, а также для выполнения специфических проверок и интеграции с другими модулями системы.
-
-Основные методы интерфейса:
-saveWhUserType(WhUserType whut):
-Сохраняет новый тип пользователя склада или обновляет существующий. Возвращает идентификатор сохраненного или обновленного объекта.
-
-getAllWhUserTypes():
-Возвращает список всех типов пользователей склада, зарегистрированных в системе.
-
-deleteWhUserType(Integer id):
-Удаляет тип пользователя склада по его идентификатору.
-
-getOneWhUserType(Integer id):
-Возвращает детальную информацию о конкретном типе пользователя склада по его идентификатору.
-
-updateWhUserType(WhUserType whut):
-Обновляет информацию о типе пользователя склада.
-
-isWhUserTypeCodeExit(String code) и isWhUserTypeCodeExitForEdit(String code, Integer id):
-Проверяют, существует ли уже тип пользователя склада с указанным кодом, что важно для предотвращения дублирования данных при создании или обновлении записей.
-
-getWhUserTypeuserEmailCount(String email) и getWhUserTypeuserEmailCountForEdit(String email, Integer id):
-Проверяют, существует ли уже тип пользователя склада с указанным адресом электронной почты.
-
-getWhUserTypeuserIdNumCount(String idnum) и getWhUserTypeuserIdNumCountForEdit(String idnum, Integer id):
-Проверяют, существует ли уже тип пользователя склада с указанным идентификационным номером.
-
-getWhUserTypUserIDAndCount():
-Возвращает агрегированные данные по типам пользователей склада для аналитических отчетов и визуализаций.
-
-getWhUserIdAndCodeByType(String type):
-Предоставляет карту идентификаторов и кодов типов пользователей склада, фильтруемую по определенному типу, что может быть использовано для интеграции с другими модулями системы.
-
-Рекомендации для реализации:
-Валидация данных: Перед сохранением или обновлением информации о типах пользователей склада важно провести тщательную проверку входных данных для обеспечения их корректности и соответствия бизнес-правилам.
-
-Обработка исключений: При разработке реализации сервиса следует предусмотреть корректную обработку возможных исключений, например, при попытке удалить несуществующий тип пользователя склада.
-
-Оптимизация запросов: Для методов, возвращающих списки или агрегированные данные, важно обеспечить эффективность выполнения запросов к базе данных.
-
-Безопасность: Необходимо обеспечить защиту данных о типах пользователей склада, особенно если они содержат чувствительную информацию.
-
-Реализация IWhUserTypeService играет важную роль в обеспечении гибкого и эффективного управления типами пользователей склада, позволяя системе адаптироваться к разнообразным бизнес-процессам и операционным потребностям.
-*/
