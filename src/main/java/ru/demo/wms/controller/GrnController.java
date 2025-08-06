@@ -62,7 +62,8 @@ public class GrnController {
 	/**
 	 * Сохраняет новый GRN и обновляет статус соответствующего заказа на закупку.
 	 *
-	 * @param grn   приходной ордер, полученный с формы
+	 * @param grn объект Goods Receipt Note, заполненный пользователем на веб-форме (выбор заказа на закупку).
+	 * Этот объект дополняется деталями и сохраняется в систему.
 	 * @param model модель данных
 	 * @return редирект на страницу регистрации GRN
 	 */
@@ -74,7 +75,7 @@ public class GrnController {
 
 			if (id != null)
 				orderService.updatePoStatus(
-						((Grn) grn.getPo()).getId(),
+						grn.getPo().getId(),
 						PurchaseOrderStatus.RECEIVED.name()
 				);
 
@@ -93,7 +94,7 @@ public class GrnController {
 	 * @param grn приходной ордер, для которого создаются детали
 	 */
 	private void createGrnDtlsByPo(Grn grn) {
-		Integer poId = ((Grn) grn.getPo()).getId();
+		Integer poId = grn.getPo().getId();
 		List<PurchaseDtl> poDtls = orderService.getPurchaseDtlsByPoId(poId);
 		Set<GrnDtl> grnSet = new HashSet<>();
 
