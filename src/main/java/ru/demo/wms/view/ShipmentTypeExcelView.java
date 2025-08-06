@@ -13,35 +13,52 @@ import org.springframework.web.servlet.view.document.AbstractXlsxView;
 
 import ru.demo.wms.model.ShipmentType;
 
+/**
+ * Excel-представление для экспорта данных о типах отправлений (ShipmentType).
+ * Генерирует файл SHIPMENTS.xlsx со структурированной таблицей данных.
+ */
 public class ShipmentTypeExcelView extends AbstractXlsxView {
 
+	/**
+	 * Основной метод, создающий Excel-документ.
+	 *
+	 * @param model    модель, содержащая список объектов ShipmentType по ключу "list"
+	 * @param workbook книга Excel, в которую добавляется лист с данными
+	 * @param request  HTTP-запрос (не используется)
+	 * @param response HTTP-ответ, в который добавляется заголовок для скачивания файла
+	 * @throws Exception при ошибке создания документа
+	 */
 	@Override
 	protected void buildExcelDocument(
-			Map<String, Object> model, 
-			Workbook workbook, 
+			Map<String, Object> model,
+			Workbook workbook,
 			HttpServletRequest request,
-			HttpServletResponse response) 
-					throws Exception
-	{
-		
+			HttpServletResponse response
+	) throws Exception {
+
+		// Устанавливаем заголовок ответа для скачивания файла
 		response.addHeader("Content-Disposition", "attachment;filename=SHIPMENTS.xlsx");
-		
 
+		// Получение списка объектов ShipmentType из модели
 		@SuppressWarnings("unchecked")
-		List<ShipmentType> list  = (List<ShipmentType>)model.get("list");
-		
+		List<ShipmentType> list = (List<ShipmentType>) model.get("list");
 
+		// Создание нового листа в книге Excel
 		Sheet sheet = workbook.createSheet("SHIPMENTS");
-		
 
+		// Добавление заголовков таблицы
 		addHeader(sheet);
-		addBody(sheet,list);
-		
-		
-	}
-	
-	private void addHeader(Sheet sheet) {
 
+		// Заполнение таблицы строками с данными
+		addBody(sheet, list);
+	}
+
+	/**
+	 * Добавляет заголовок таблицы в первую строку листа.
+	 *
+	 * @param sheet рабочий лист Excel, куда добавляются заголовки
+	 */
+	private void addHeader(Sheet sheet) {
 		Row row = sheet.createRow(0);
 		row.createCell(0).setCellValue("ID");
 		row.createCell(1).setCellValue("MODE");
@@ -51,9 +68,15 @@ public class ShipmentTypeExcelView extends AbstractXlsxView {
 		row.createCell(5).setCellValue("NOTE");
 	}
 
+	/**
+	 * Заполняет тело таблицы значениями из списка объектов ShipmentType.
+	 *
+	 * @param sheet лист Excel для заполнения
+	 * @param list  список типов отправлений, подлежащих экспорту
+	 */
 	private void addBody(Sheet sheet, List<ShipmentType> list) {
-		int rowNum = 1;
-		for(ShipmentType st : list) {
+		int rowNum = 1; // начинаем со второй строки (первая — заголовок)
+		for (ShipmentType st : list) {
 			Row row = sheet.createRow(rowNum++);
 			row.createCell(0).setCellValue(st.getId());
 			row.createCell(1).setCellValue(st.getShipMode());
@@ -63,41 +86,4 @@ public class ShipmentTypeExcelView extends AbstractXlsxView {
 			row.createCell(5).setCellValue(st.getShipDesc());
 		}
 	}
-
 }
-
-/*
-Класс ShipmentTypeExcelView наследует AbstractXlsxView, предоставляемый Spring для создания Excel-документов. Этот класс предназначен для генерации Excel-файла со списком типов отправлений (ShipmentType), которые предоставляются в виде модели. Вот шаги, которые класс выполняет для создания документа:
-
-1. Настройка ответа HTTP:
-java
-Copy code
-response.addHeader("Content-Disposition", "attachment;filename=SHIPMENTS.xlsx");
-Эта строка указывает, что сгенерированный файл должен быть предложен для скачивания с именем SHIPMENTS.xlsx.
-
-2. Чтение данных из модели:
-java
-Copy code
-List<ShipmentType> list = (List<ShipmentType>)model.get("list");
-Данные для документа берутся из модели, переданной контроллером. Предполагается, что контроллер добавляет список объектов ShipmentType в модель.
-
-3. Создание листа в книге Excel:
-java
-Copy code
-Sheet sheet = workbook.createSheet("SHIPMENTS");
-Создается новый лист в рабочей книге Excel с именем SHIPMENTS.
-
-4. Добавление заголовков:
-java
-Copy code
-private void addHeader(Sheet sheet) {...}
-Этот метод создает первую строку листа с заголовками колонок. Заголовки включают ID, MODE, CODE, ENABLED, GRADE, и NOTE.
-
-5. Заполнение данных:
-java
-Copy code
-private void addBody(Sheet sheet, List<ShipmentType> list) {...}
-Метод проходит по списку ShipmentType, переданному в модели, и для каждого элемента создает новую строку в листе Excel, заполняя ячейки значениями свойств объекта ShipmentType.
-
-Этот подход позволяет автоматически создавать структурированные документы Excel на основе данных приложения, что может быть очень полезно для отчетности, экспорта данных и их последующего анализа.
-*/

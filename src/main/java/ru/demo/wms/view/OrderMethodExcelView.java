@@ -13,35 +13,53 @@ import org.springframework.web.servlet.view.document.AbstractXlsxView;
 
 import ru.demo.wms.model.OrderMethod;
 
+/**
+ * Представление для экспорта данных о методах заказа (OrderMethod) в Excel (.xlsx).
+ * Наследует {@link AbstractXlsxView} и используется для генерации отчета по OrderMethod.
+ * <p>
+ * Данный класс формирует Excel-документ с таблицей, содержащей данные из модели.
+ * Форматирует таблицу с заголовками и заполняет строками данных.
+ */
 public class OrderMethodExcelView extends AbstractXlsxView {
 
+	/**
+	 * Основной метод построения Excel-документа.
+	 *
+	 * @param model    модель, переданная из контроллера (ожидается ключ "list" с List<OrderMethod>)
+	 * @param workbook объект книги Excel, в который будет записан отчет
+	 * @param request  HTTP-запрос (не используется)
+	 * @param response HTTP-ответ (заголовок Content-Disposition)
+	 * @throws Exception если произойдет ошибка при построении документа
+	 */
 	@Override
 	protected void buildExcelDocument(
-			Map<String, Object> model, 
-			Workbook workbook, 
+			Map<String, Object> model,
+			Workbook workbook,
 			HttpServletRequest request,
-			HttpServletResponse response) 
-					throws Exception
-	{
-		
+			HttpServletResponse response
+	) throws Exception {
+
+		// Настройка заголовка для скачивания
 		response.addHeader("Content-Disposition", "attachment;filename=OM.xlsx");
-		
 
+		// Получение списка объектов OrderMethod из модели
 		@SuppressWarnings("unchecked")
-		List<OrderMethod> list  = (List<OrderMethod>)model.get("list");
-		
+		List<OrderMethod> list = (List<OrderMethod>) model.get("list");
 
+		// Создание листа Excel
 		Sheet sheet = workbook.createSheet("ORDERMETHODS");
-		
 
+		// Заполнение заголовка и данных
 		addHeader(sheet);
-		addBody(sheet,list);
-		
-		
+		addBody(sheet, list);
 	}
-	
-	private void addHeader(Sheet sheet) {
 
+	/**
+	 * Добавляет заголовок таблицы (первая строка) в лист Excel.
+	 *
+	 * @param sheet лист Excel, в который будет добавлен заголовок
+	 */
+	private void addHeader(Sheet sheet) {
 		Row row = sheet.createRow(0);
 		row.createCell(0).setCellValue("ID");
 		row.createCell(1).setCellValue("MODE");
@@ -51,41 +69,22 @@ public class OrderMethodExcelView extends AbstractXlsxView {
 		row.createCell(5).setCellValue("NOTE");
 	}
 
+	/**
+	 * Добавляет строки данных в таблицу Excel, начиная со второй строки (индекс 1).
+	 *
+	 * @param sheet лист Excel, в который будут записаны данные
+	 * @param list  список объектов OrderMethod для отображения
+	 */
 	private void addBody(Sheet sheet, List<OrderMethod> list) {
-		int rowNum = 1;
-		for(OrderMethod om : list) {
+		int rowNum = 1; // строка после заголовка
+		for (OrderMethod om : list) {
 			Row row = sheet.createRow(rowNum++);
 			row.createCell(0).setCellValue(om.getId());
 			row.createCell(1).setCellValue(om.getOrderMode());
 			row.createCell(2).setCellValue(om.getOrderCode());
 			row.createCell(3).setCellValue(om.getOrderType());
-			row.createCell(4).setCellValue(om.getOrderAcpt().toString());
+			row.createCell(4).setCellValue(om.getOrderAcpt().toString()); // преобразуем список в строку
 			row.createCell(5).setCellValue(om.getOrderDesc());
 		}
 	}
-
 }
-/*
-Класс OrderMethodExcelView расширяет AbstractXlsxView, предоставляя функциональность для генерации Excel-документа (*.xlsx) с данными о методах заказа (OrderMethod). Этот вид создает структурированный отчет, который можно скачать и использовать для анализа, отчетности или дальнейшей обработки. Вот как работает этот класс:
-
-Переопределенный метод buildExcelDocument:
-Подготовка данных: Метод получает данные из модели, переданной контроллером. Ожидается, что модель содержит список (List<OrderMethod>) объектов OrderMethod, который используется для заполнения Excel-документа.
-
-Настройка ответа: Устанавливает заголовок ответа Content-Disposition с именем файла, чтобы обеспечить скачивание файла вместо отображения его в браузере.
-
-Создание листа: В рабочей книге (Workbook) создается новый лист с именем "ORDERMETHODS".
-
-Методы addHeader и addBody:
-addHeader(Sheet sheet): Создает заголовок таблицы в Excel-листе. Определяет названия колонок, которые будут использоваться в документе.
-
-addBody(Sheet sheet, List<OrderMethod> list): Заполняет тело таблицы данными. Для каждого объекта OrderMethod в списке создает новую строку (Row) в листе и заполняет ячейки соответствующими значениями из объекта. Этот метод также демонстрирует, как можно обрабатывать коллекции внутри объектов при их конвертации в строки для Excel (например, преобразование списка принимаемых методов заказа orderAcpt в строку).
-
-Примечания и рекомендации:
-Дальнейшее форматирование: Класс может быть расширен с помощью библиотеки Apache POI для добавления стилей ячеек, форматирования данных и других элементов визуализации для улучшения читабельности и профессионального вида создаваемого документа.
-
-Безопасность: Важно убедиться, что генерируемые отчеты не содержат чувствительной информации, которая не должна быть раскрыта пользователям или третьим лицам без соответствующих разрешений.
-
-Производительность: При работе с большим объемом данных следует учитывать возможные вопросы производительности и потребления памяти при генерации Excel-документов, особенно если в отчете предполагается содержание тысяч строк.
-
-Класс OrderMethodExcelView является полезным инструментом для экспорта данных в стандартный и широко используемый формат, предоставляя пользователям возможность более глубокого анализа и обработки информации о методах заказа вне приложения.
-*/

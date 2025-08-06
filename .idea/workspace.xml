@@ -6,10 +6,14 @@
   <component name="ChangeListManager">
     <list default="true" id="b7333457-b5e6-493f-82fc-60b81c498e0e" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/util/MailUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/util/MailUtil.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/util/MyAppUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/util/MyAppUtil.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/util/OrderMethodUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/util/OrderMethodUtil.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/util/ShipmentTypeUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/util/ShipmentTypeUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/view/CustomerInvoicePDFView.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/view/CustomerInvoicePDFView.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/view/OrderMethodExcelView.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/view/OrderMethodExcelView.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/view/ShipmentTypeExcelView.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/view/ShipmentTypeExcelView.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/view/ShipmentTypePdfView.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/view/ShipmentTypePdfView.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/view/UomExcelView.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/view/UomExcelView.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/view/UomPdfView.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/view/UomPdfView.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/view/VendorInvoicePdfView.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/view/VendorInvoicePdfView.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/demo/wms/view/WhUserTypeExcelView.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/demo/wms/view/WhUserTypeExcelView.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

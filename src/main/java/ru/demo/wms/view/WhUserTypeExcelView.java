@@ -13,32 +13,69 @@ import org.springframework.web.servlet.view.document.AbstractXlsxView;
 
 import ru.demo.wms.model.WhUserType;
 
-public class WhUserTypeExcelView extends AbstractXlsxView{
+/**
+ * Класс {@code WhUserTypeExcelView} предназначен для экспорта данных
+ * о типах пользователей склада (WhUserType) в формате Excel (.xlsx).
+ * <p>
+ * Реализует шаблон Spring MVC View с использованием Apache POI.
+ * Позволяет пользователям скачать сформированный Excel-файл
+ * с данными из модели, переданной контроллером.
+ *
+ * <p><b>Содержит следующие столбцы:</b></p>
+ * <ul>
+ *   <li>ID</li>
+ *   <li>USER TYPE</li>
+ *   <li>CODE</li>
+ *   <li>USER FOR</li>
+ *   <li>EMAIL</li>
+ *   <li>CONTACT NUMBER</li>
+ *   <li>ID TYPE</li>
+ *   <li>IF OTHER ID</li>
+ *   <li>ID NUMBER</li>
+ * </ul>
+ *
+ * <p>Используется в разделе управления пользователями склада для формирования отчётности или аудита.</p>
+ */
+public class WhUserTypeExcelView extends AbstractXlsxView {
 
+	/**
+	 * Формирует Excel-документ на основе данных модели.
+	 *
+	 * @param model    модель с данными от контроллера
+	 * @param workbook объект книги Excel, предоставленный Spring
+	 * @param request  текущий HTTP-запрос
+	 * @param response текущий HTTP-ответ
+	 * @throws Exception если происходит ошибка генерации Excel
+	 */
 	@Override
-	protected void buildExcelDocument(Map<String, Object> model, 
-			Workbook workbook, 
-			HttpServletRequest request,
-			HttpServletResponse response)
-					throws Exception {
+	protected void buildExcelDocument(Map<String, Object> model,
+									  Workbook workbook,
+									  HttpServletRequest request,
+									  HttpServletResponse response) throws Exception {
 
+		// Устанавливаем заголовок ответа для скачивания файла
 		response.addHeader("Content-Disposition", "attachment;filename=WhUserType.xlsx");
 
-
+		// Извлекаем список объектов WhUserType из модели
 		@SuppressWarnings("unchecked")
-		List<WhUserType> list  = (List<WhUserType>)model.get("list");
+		List<WhUserType> list = (List<WhUserType>) model.get("list");
 
-
+		// Создаём новый лист в книге Excel
 		Sheet sheet = workbook.createSheet("WH USER TYPE");
 
-
+		// Добавляем заголовок таблицы
 		addHeader(sheet);
-		addBody(sheet,list);
 
+		// Добавляем строки с данными
+		addBody(sheet, list);
 	}
 
+	/**
+	 * Добавляет строку заголовка в лист Excel.
+	 *
+	 * @param sheet лист Excel, в который добавляется заголовок
+	 */
 	private void addHeader(Sheet sheet) {
-
 		Row row = sheet.createRow(0);
 		row.createCell(0).setCellValue("ID");
 		row.createCell(1).setCellValue("USER TYPE");
@@ -51,61 +88,25 @@ public class WhUserTypeExcelView extends AbstractXlsxView{
 		row.createCell(8).setCellValue("ID NUMBER");
 	}
 
+	/**
+	 * Добавляет строки с данными о пользователях склада.
+	 *
+	 * @param sheet лист Excel, в который добавляются строки
+	 * @param list  список объектов WhUserType
+	 */
 	private void addBody(Sheet sheet, List<WhUserType> list) {
 		int rowNum = 1;
-		for(WhUserType whut : list) {
+		for (WhUserType whut : list) {
 			Row row = sheet.createRow(rowNum++);
 			row.createCell(0).setCellValue(whut.getId());
 			row.createCell(1).setCellValue(whut.getUserType());
 			row.createCell(2).setCellValue(whut.getUserCode());
 			row.createCell(3).setCellValue(whut.getUserFor());
-
 			row.createCell(4).setCellValue(whut.getUserEmail());
 			row.createCell(5).setCellValue(whut.getUserContact());
 			row.createCell(6).setCellValue(whut.getUserIdType());
 			row.createCell(7).setCellValue(whut.getIfOther());
 			row.createCell(8).setCellValue(whut.getUserIdNum());
-
 		}
 	}
-
 }
-
-/*
-Класс WhUserTypeExcelView расширяет AbstractXlsxView, предоставляя способ создания Excel-документов для отображения данных о типах пользователей склада (WhUserType). Это может включать различные атрибуты, такие как ID пользователя, тип, код, предназначение (например, покупатель, продавец и т. д.), электронная почта, контактный номер, тип идентификации, другие типы идентификации и номер идентификации. Вот как работает этот класс:
-
-Основные шаги для создания Excel-документа:
-Настройка HTTP-ответа:
-Устанавливает заголовок Content-Disposition для ответа, чтобы указать браузеру скачать файл как WhUserType.xlsx, вместо отображения его содержимого.
-
-Чтение данных из модели:
-Извлекает список объектов WhUserType, переданных контроллером через модель, для последующего использования при заполнении Excel-листа.
-
-Создание нового листа:
-Создает лист в рабочей книге Excel с названием "WH USER TYPE".
-
-Добавление заголовков столбцов:
-Создает первую строку листа с заголовками столбцов, соответствующими атрибутам объектов WhUserType.
-
-Заполнение листа данными:
-Для каждого объекта WhUserType из списка создает новую строку в Excel-листе и заполняет ее ячейки значениями атрибутов этого объекта.
-
-Вспомогательные методы:
-addHeader(Sheet sheet):
-Определяет и добавляет заголовки столбцов на лист.
-
-addBody(Sheet sheet, List<WhUserType> list):
-Проходит по списку WhUserType и для каждого элемента списка создает новую строку в листе, заполняя ее данными.
-
-Применение и польза:
-Класс WhUserTypeExcelView может быть использован в приложениях для управления складом или цепочками поставок, где необходимо предоставить пользователям экспортируемые отчеты о типах пользователей, зарегистрированных в системе. Это может быть полезно для аналитических целей, для аудита, для обеспечения соответствия или для внутренней документации.
-
-Рекомендации:
-Настройка стилей:
-Apache POI предоставляет возможности для настройки стилей ячеек, что может быть использовано для улучшения визуального восприятия сгенерированных отчетов (например, использование разных цветов или шрифтов для заголовков).
-
-Безопасность данных:
-При экспорте данных важно убедиться, что конфиденциальная информация защищена и доступна только для авторизованных пользователей.
-
-WhUserTypeExcelView предоставляет эффективный способ для визуализации и распространения данных о пользователях склада в формате, который легко можно анализировать и делиться с другими.
-*/
